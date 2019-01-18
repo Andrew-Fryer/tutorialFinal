@@ -168,6 +168,7 @@ class App extends Component {
       <div className="App">
         {this.state.user ?
         <div>
+          <h1> See I (Andrew Fryer) can modify everything! </h1>
           <h1 style={{...defaultStyle, 
             'font-size': '54px',
             'margin-top': '5px'
