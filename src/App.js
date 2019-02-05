@@ -183,22 +183,63 @@ class App extends Component {
           {playlistToRender.map((playlist, i) => 
             <Playlist playlist={playlist} index={i} />
           )}
+
+          <button onClick={() => {  // TODO: optionally render buttons
+            let name = prompt("Enter name: ");
+            fetch('https://mod3backend.herokuapp.com/create', {
+              method : "GET",
+              body : JSON.stringify({"name" : name})
+            })
+            .then(function(response) {
+              this.setState({
+                connectCode : response.body.newConnectCode // TODO: add this text somewhere
+              })
+              console.log(response.body.newConnectCode)
+            })
+            }
+          }
+          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
+
+          <button onClick={() => {
+            let connectCode = prompt("Enter connectCode: ");
+            fetch('https://mod3backend.herokuapp.com/join', {
+              method : "GET",
+              body : JSON.stringify({"connectCode" : this.state.connectCode})
+            })
+            .then(function(response) {
+              if(response.body !== "Could not connect") {
+                this.setState({
+                  connectCode : connectCode // TODO: add this text somewhere
+                })
+              } else {
+                alert("Could not connect");
+              }
+              console.log(response.body)
+            })
+            }
+          }
+          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
+
           <button onClick={() => {
             let parsed = queryString.parse(window.location.search);
             let accessToken = parsed.access_token;
-            let device_id = prompt("give me the device id")
-            for(let i=0; i<10; i++) {
-              fetch('https://api.spotify.com/v1/me/player/play', {
-                method : "PUT",
-                headers: {'Authorization': 'Bearer ' + accessToken}
-              })
-              console.log("right here")
-            }
-            
-            
+            let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
+            fetch('https://mod3backend.herokuapp.com/queue', {
+              method : "GET",
+              body : JSON.stringify({"connectCode" : this.state.connectCode})
+            })
+            .then(function(response) {
+              song = response.body[0].url; // TODO: choose top voted and unplayed
+            })
+            fetch('https://api.spotify.com/v1/me/player/play', {
+              method : "PUT",
+              headers: {'Authorization': 'Bearer ' + accessToken},
+              body : JSON.stringify({"uris": [song]})
+            })
             }
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+
         </div> : <button onClick={() => {
             window.location = window.location.href.includes('localhost') 
               ? 'http://localhost:8888/login' 
