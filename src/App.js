@@ -183,10 +183,26 @@ class App extends Component {
           {playlistToRender.map((playlist, i) => 
             <Playlist playlist={playlist} index={i} />
           )}
+          <button onClick={() => {
+            let parsed = queryString.parse(window.location.search);
+            let accessToken = parsed.access_token;
+            let device_id = prompt("give me the device id")
+            for(let i=0; i<10; i++) {
+              fetch('https://api.spotify.com/v1/me/player/play', {
+                method : "PUT",
+                headers: {'Authorization': 'Bearer ' + accessToken}
+              })
+              console.log("right here")
+            }
+            
+            
+            }
+          }
+          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
         </div> : <button onClick={() => {
             window.location = window.location.href.includes('localhost') 
               ? 'http://localhost:8888/login' 
-              : 'https://better-playlists-backend.herokuapp.com/login' }
+              : 'https://better-playlists-backend.herokuapp.com/login' } // update to mod3.herokuapp?
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Sign in with Spotify</button>
         }
