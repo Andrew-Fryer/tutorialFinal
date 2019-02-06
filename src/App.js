@@ -214,8 +214,9 @@ class App extends Component {
                   connectCode : connectCode // TODO: add this text somewhere
                 })
               } else {
-                alert("Could not connect");
+                //alert("Could not connect");
               }
+              alert(response.body)
               console.log(response.body)
             })
             }
@@ -223,10 +224,23 @@ class App extends Component {
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
 
           <button onClick={() => {
+            let url = prompt("Enter song url");
+            fetch('https://mod3backend.herokuapp.com/vote', {
+              method : "PUT",
+              body : JSON.stringify({
+                "connectCode" : this.state.connectCode,
+                "songUrl" : url
+              })
+            })
+            }
+          }
+          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
+
+          <button onClick={() => {
             let parsed = queryString.parse(window.location.search);
             let accessToken = parsed.access_token;
             let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
-            fetch('https://mod3backend.herokuapp.com/queue' +
+            fetch('https://mod3backend.herokuapp.com/queue?' +
             queryString.stringify({ // querystring
               "connectCode" : this.state.connectCode
             }), {
