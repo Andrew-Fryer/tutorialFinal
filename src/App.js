@@ -190,6 +190,9 @@ class App extends Component {
             let name = prompt("Enter name: ");
             fetch('https://mod3backend.herokuapp.com/create', {
               method : "POST",
+              headers : {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              },
               body : JSON.stringify({"name" : name})
             })
             .then(function(response) {
@@ -197,7 +200,7 @@ class App extends Component {
             })
             .then(response => {
               this.setState({connectCode : response.newConnectCode})
-              console.log(JSON.stringify(response.newConnectCode))
+              console.log("connectCode: " + JSON.stringify(response.newConnectCode))
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -232,6 +235,9 @@ class App extends Component {
             let url = prompt("Enter song url");
             fetch('https://mod3backend.herokuapp.com/vote', {
               method : "PUT",
+              headers : {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              },
               body : JSON.stringify({
                 connectCode : this.state.connectCode,
                 "songUrl" : url
@@ -260,7 +266,10 @@ class App extends Component {
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
-              headers: {'Authorization': 'Bearer ' + accessToken},
+              headers : {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              },
               body : JSON.stringify({"uris": [song]})
             })
             }
