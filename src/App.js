@@ -266,10 +266,7 @@ class App extends Component {
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
-              headers : {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-              },
+              headers: {'Authorization': 'Bearer ' + accessToken},
               body : JSON.stringify({"uris": [song]})
             })
             }
