@@ -210,16 +210,19 @@ class App extends Component {
             }), {
               method : "GET"
             })
+            .then(function(response) {
+              return response.text();
+            })
             .then(response => {
-              if(response.body !== "Could not connect") {
+              if(response !== "Could not connect") {
                 this.setState({
                   connectCode: connectCode // TODO: add this text somewhere
                 })
               } else {
                 //alert("Could not connect");
               }
-              alert(response.body)
-              console.log(response.body)
+              alert(response)
+              console.log(response)
             })
             }
           }
