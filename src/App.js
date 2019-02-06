@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
+import querystring from 'querystring';
 
 let defaultStyle = {
   color: '#fff',
@@ -191,19 +192,16 @@ class App extends Component {
               body : JSON.stringify({"name" : name})
             })
             .then(function(response) {
-              this.setState({
-                connectCode : response.body.newConnectCode // TODO: add this text somewhere
-              })
+              this.setState({connectCode : response.body.newConnectCode})
               console.log(response.body.newConnectCode)
-            })
-            }
+            })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
 
           <button onClick={() => {
             let connectCode = prompt("Enter connectCode: ");
             fetch('https://mod3backend.herokuapp.com/join?' +
-            queryString.stringify({ // querystring
+            querystring.stringify({
               "connectCode" : connectCode
             }), {
               method : "GET"
@@ -228,7 +226,7 @@ class App extends Component {
             fetch('https://mod3backend.herokuapp.com/vote', {
               method : "PUT",
               body : JSON.stringify({
-                "connectCode" : this.state.connectCode,
+                connectCode : this.state.connectCode,
                 "songUrl" : url
               })
             })
@@ -241,8 +239,8 @@ class App extends Component {
             let accessToken = parsed.access_token;
             let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
             fetch('https://mod3backend.herokuapp.com/queue?' +
-            queryString.stringify({ // querystring
-              "connectCode" : this.state.connectCode
+            querystring.stringify({
+              connectCode : this.state.connectCode
             }), {
               method : "GET"
             })
