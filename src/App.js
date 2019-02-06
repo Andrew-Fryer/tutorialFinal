@@ -16,6 +16,8 @@ let counterStyle = {...defaultStyle,
   'line-height': '30px'
 }
 
+let backEndUrl = "http://localhost:8888" // "https://mod3backend.herokuapp.com"
+
 function isEven(number) {
   return number % 2
 }
@@ -188,10 +190,10 @@ class App extends Component {
 
           <button onClick={() => {  // TODO: optionally render buttons
             let name = prompt("Enter name: ");
-            fetch('https://mod3backend.herokuapp.com/create', {
+            fetch(backEndUrl + '/create', {
               method : "POST",
               headers : {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                'Content-Type': 'application/json;charset=UTF-8'
               },
               body : JSON.stringify({"name" : name})
             })
@@ -207,7 +209,7 @@ class App extends Component {
 
           <button onClick={() => {
             let connectCode = prompt("Enter connectCode: ");
-            fetch('https://mod3backend.herokuapp.com/join?' +
+            fetch(backEndUrl + '/join?' +
             querystring.stringify({
               "connectCode" : connectCode
             }), {
@@ -233,10 +235,10 @@ class App extends Component {
 
           <button onClick={() => {
             let url = prompt("Enter song url");
-            fetch('https://mod3backend.herokuapp.com/vote', {
+            fetch(backEndUrl + '/vote', {
               method : "PUT",
               headers : {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                'Content-Type': 'application/json;charset=UTF-8'
               },
               body : JSON.stringify({
                 connectCode : this.state.connectCode,
@@ -251,7 +253,7 @@ class App extends Component {
             let parsed = queryString.parse(window.location.search);
             let accessToken = parsed.access_token;
             let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
-            fetch('https://mod3backend.herokuapp.com/queue?' +
+            fetch(backEndUrl + '/queue?' +
             querystring.stringify({
               connectCode : this.state.connectCode
             }), {
@@ -263,6 +265,7 @@ class App extends Component {
             .then(function(response) {
               song = response[0].url; // TODO: choose top voted and unplayed
               console.log(JSON.stringify(response));
+              console.log(song)
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
@@ -276,7 +279,7 @@ class App extends Component {
         </div> : <button onClick={() => {
             window.location = window.location.href.includes('localhost') 
               ? 'http://localhost:8888/login' 
-              : 'https://better-playlists-backend.herokuapp.com/login' } // update to mod3.herokuapp?
+              : backEndUrl + '/login' }
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Sign in with Spotify</button>
         }
