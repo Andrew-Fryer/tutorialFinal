@@ -196,8 +196,8 @@ class App extends Component {
               return response.json();
             })
             .then(response => {
-              this.setState({connectCode : response.body.newConnectCode})
-              console.log(JSON.stringify(response.body.newConnectCode))
+              this.setState({connectCode : response.newConnectCode})
+              console.log(JSON.stringify(response.newConnectCode))
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -252,8 +252,8 @@ class App extends Component {
               return response.json();
             })
             .then(function(response) {
-              song = response.body[0].url; // TODO: choose top voted and unplayed
-              console.log(JSON.stringify(response.body));
+              song = response[0].url; // TODO: choose top voted and unplayed
+              console.log(JSON.stringify(response));
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
