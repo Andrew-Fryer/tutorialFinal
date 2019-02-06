@@ -99,7 +99,7 @@ class App extends Component {
     this.state = {
       serverData: {},
       filterString: '',
-      connectCode: 
+      connectCode: 0
     }
   }
   componentDidMount() {
