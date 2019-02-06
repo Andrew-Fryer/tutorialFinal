@@ -187,7 +187,7 @@ class App extends Component {
           <button onClick={() => {  // TODO: optionally render buttons
             let name = prompt("Enter name: ");
             fetch('https://mod3backend.herokuapp.com/create', {
-              method : "GET",
+              method : "POST",
               body : JSON.stringify({"name" : name})
             })
             .then(function(response) {
@@ -202,9 +202,11 @@ class App extends Component {
 
           <button onClick={() => {
             let connectCode = prompt("Enter connectCode: ");
-            fetch('https://mod3backend.herokuapp.com/join', {
-              method : "GET",
-              body : JSON.stringify({"connectCode" : this.state.connectCode})
+            fetch('https://mod3backend.herokuapp.com/join?' +
+            queryString.stringify({ // querystring
+              "connectCode" : connectCode
+            }), {
+              method : "GET"
             })
             .then(function(response) {
               if(response.body !== "Could not connect") {
@@ -224,12 +226,15 @@ class App extends Component {
             let parsed = queryString.parse(window.location.search);
             let accessToken = parsed.access_token;
             let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
-            fetch('https://mod3backend.herokuapp.com/queue', {
-              method : "GET",
-              body : JSON.stringify({"connectCode" : this.state.connectCode})
+            fetch('https://mod3backend.herokuapp.com/queue' +
+            queryString.stringify({ // querystring
+              "connectCode" : this.state.connectCode
+            }), {
+              method : "GET"
             })
             .then(function(response) {
               song = response.body[0].url; // TODO: choose top voted and unplayed
+              console.log(response.body);
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
