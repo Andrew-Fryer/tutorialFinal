@@ -98,7 +98,8 @@ class App extends Component {
     super();
     this.state = {
       serverData: {},
-      filterString: ''
+      filterString: '',
+      connectCode: 
     }
   }
   componentDidMount() {
@@ -192,8 +193,11 @@ class App extends Component {
               body : JSON.stringify({"name" : name})
             })
             .then(function(response) {
+              return response.json();
+            })
+            .then(function(response) {
               this.setState({connectCode : response.body.newConnectCode})
-              console.log(response.body.newConnectCode)
+              console.log(JSON.stringify(response.body.newConnectCode))
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -209,7 +213,7 @@ class App extends Component {
             .then(function(response) {
               if(response.body !== "Could not connect") {
                 this.setState({
-                  connectCode : connectCode // TODO: add this text somewhere
+                  connectCode: connectCode // TODO: add this text somewhere
                 })
               } else {
                 //alert("Could not connect");
@@ -245,8 +249,11 @@ class App extends Component {
               method : "GET"
             })
             .then(function(response) {
+              return response.json();
+            })
+            .then(function(response) {
               song = response.body[0].url; // TODO: choose top voted and unplayed
-              console.log(response.body);
+              console.log(JSON.stringify(response.body));
             })
             fetch('https://api.spotify.com/v1/me/player/play', {
               method : "PUT",
