@@ -195,7 +195,7 @@ class App extends Component {
             .then(function(response) {
               return response.json();
             })
-            .then(function(response) {
+            .then(response => {
               this.setState({connectCode : response.body.newConnectCode})
               console.log(JSON.stringify(response.body.newConnectCode))
             })}
@@ -210,7 +210,7 @@ class App extends Component {
             }), {
               method : "GET"
             })
-            .then(function(response) {
+            .then(response => {
               if(response.body !== "Could not connect") {
                 this.setState({
                   connectCode: connectCode // TODO: add this text somewhere
