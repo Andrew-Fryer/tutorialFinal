@@ -223,10 +223,7 @@ class App extends Component {
                 this.setState({
                   connectCode: connectCode // TODO: add this text somewhere
                 })
-              } else {
-                //alert("Could not connect");
               }
-              alert(response)
               console.log(response)
             })
             }
