@@ -82,7 +82,8 @@ class Playlist extends Component {
         'background-color': isEven(this.props.index) 
           ? '#C0C0C0' 
           : '#808080'
-        }}>
+        }
+        }>
         <h2>{playlist.name}</h2>
         <img src={playlist.imageUrl} style={{width: '60px'}}/>
         <ul style={{'margin-top': '10px', 'font-weight': 'bold'}}>
@@ -101,7 +102,8 @@ class App extends Component {
     this.state = {
       serverData: {},
       filterString: '',
-      connectCode: undefined
+      connectCode: undefined,
+      venueName: undefined
     }
   }
   componentDidMount() {
@@ -188,7 +190,7 @@ class App extends Component {
             <Playlist playlist={playlist} index={i} />
           )}
 
-          <button onClick={() => {  // TODO: optionally render buttons
+          <button onClick={() => {
             let name = prompt("Enter name: ");
             fetch(backEndUrl + '/create', {
               method : "POST",
@@ -201,13 +203,64 @@ class App extends Component {
               return response.json();
             })
             .then(response => {
-              this.setState({connectCode : response.newConnectCode})
+              this.setState({
+                connectCode : response.newConnectCode,
+                venueName : name
+              })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
 
-          <button onClick={() => {
+          {this.state.connectCode ? // TODO: store name of party
+          <div> 
+            Connected To: {this.state.venueName}
+            <button onClick={() => {
+              let url = prompt("Enter song url");
+              fetch(backEndUrl + '/vote', {
+                method : "PUT",
+                headers : {
+                  'Content-Type': 'application/json;charset=UTF-8'
+                },
+                body : JSON.stringify({
+                  connectCode : this.state.connectCode,
+                  "songUrl" : url
+                })
+              })
+              }
+            }
+            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
+
+            <button onClick={() => {
+              let parsed = queryString.parse(window.location.search);
+              let accessToken = parsed.access_token;
+              var song;
+              fetch(backEndUrl + '/queue?' +
+              querystring.stringify({
+                connectCode : this.state.connectCode
+              }), {
+                method : "GET"
+              })
+              .then(function(response) {
+                return response.json();
+              })
+              .then(function(response) {
+                song = response[0].url; // TODO: choose top voted and unplayed
+              })
+              .then(function() {
+                fetch('https://api.spotify.com/v1/me/player/play', {
+                  method : "PUT",
+                  headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                  },
+                  body : JSON.stringify({"uris": [song]})
+                })
+                console.log("Playing: " + song)
+              })
+              }
+            }
+            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+          </div> : <button onClick={() => {
             let connectCode = prompt("Enter connectCode: ");
             fetch(backEndUrl + '/join?' +
             querystring.stringify({
@@ -219,62 +272,20 @@ class App extends Component {
               return response.text();
             })
             .then(response => {
-              if(response !== "Could not connect") {
+              if(response !== "Could not connect") { // TODO: use status code instead
                 this.setState({
-                  connectCode: connectCode // TODO: add this text somewhere
+                  connectCode: connectCode, // TODO: add this text somewhere
+                  venueName: response       // TODO: switch to json instead of text
                 })
+                console.log("Connected to: " + response)
+              } else {
+                console.log("Could not connect")
               }
-              console.log(response)
             })
             }
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
-
-          <button onClick={() => {
-            let url = prompt("Enter song url");
-            fetch(backEndUrl + '/vote', {
-              method : "PUT",
-              headers : {
-                'Content-Type': 'application/json;charset=UTF-8'
-              },
-              body : JSON.stringify({
-                connectCode : this.state.connectCode,
-                "songUrl" : url
-              })
-            })
-            }
           }
-          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
-
-          <button onClick={() => {
-            let parsed = queryString.parse(window.location.search);
-            let accessToken = parsed.access_token;
-            var song;
-            fetch(backEndUrl + '/queue?' +
-            querystring.stringify({
-              connectCode : this.state.connectCode
-            }), {
-              method : "GET"
-            })
-            .then(function(response) {
-              return response.json();
-            })
-            .then(function(response) {
-              song = response[0].url; // TODO: choose top voted and unplayed
-            })
-            .then(function() {
-              fetch('https://api.spotify.com/v1/me/player/play', {
-                method : "PUT",
-                headers: {
-                  'Authorization': 'Bearer ' + accessToken
-                },
-                body : JSON.stringify({"uris": [song]})
-              })
-              console.log("Playing: " + song)
-            })
-            }
-          }
-          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
 
         </div> : <button onClick={() => {
             window.location = backEndUrl + '/login'
