@@ -212,7 +212,7 @@ class App extends Component {
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
 
-          {this.state.connectCode ? // TODO: store name of party
+          {this.state.connectCode ?
           <div> 
             Connected To: {this.state.venueName}
             <button onClick={() => {
