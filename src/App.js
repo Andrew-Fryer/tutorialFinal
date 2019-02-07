@@ -16,7 +16,7 @@ let counterStyle = {...defaultStyle,
   'line-height': '30px'
 }
 
-let backEndUrl = "http://localhost:8888" // "https://mod3backend.herokuapp.com"
+let backEndUrl = window.location.href.includes('localhost') ? "http://localhost:8888" : "https://mod3backend.herokuapp.com"
 
 function isEven(number) {
   return number % 2
@@ -277,10 +277,8 @@ class App extends Component {
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
 
         </div> : <button onClick={() => {
-            window.location = window.location.href.includes('localhost') 
-              ? 'http://localhost:8888/login' 
-              : backEndUrl + '/login' }
-          }
+            window.location = backEndUrl + '/login'
+          }}
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Sign in with Spotify</button>
         }
       </div>
