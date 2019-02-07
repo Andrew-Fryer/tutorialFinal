@@ -22,6 +22,19 @@ function isEven(number) {
   return number % 2
 }
 
+function vote(connectCode, url) {
+  fetch(backEndUrl + '/vote', {
+    method : "PUT",
+    headers : {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    body : JSON.stringify({
+      connectCode : connectCode,
+      "songUrl" : url
+    })
+  })
+}
+
 class PlaylistCounter extends Component {
   render() {
     let playlistCounterStyle = counterStyle
@@ -82,8 +95,13 @@ class Playlist extends Component {
         'background-color': isEven(this.props.index) 
           ? '#C0C0C0' 
           : '#808080'
-        }
-        }>
+        }}
+        onClick={() => {
+          playlist.songs.map(song => {
+            vote(this.props.connectCode, song.url)
+          })
+          alert("voting")
+        }}>
         <h2>{playlist.name}</h2>
         <img src={playlist.imageUrl} style={{width: '60px'}}/>
         <ul style={{'margin-top': '10px', 'font-weight': 'bold'}}>
@@ -139,10 +157,13 @@ class App extends Component {
         trackDatas.forEach((trackData, i) => {
           playlists[i].trackDatas = trackData.items
             .map(item => item.track)
-            .map(trackData => ({
+            .map(trackData => {
+              console.log(trackData)
+              return {
               name: trackData.name,
+              url: trackData.uri,
               duration: trackData.duration_ms / 1000
-            }))
+            }})
         })
         return playlists
       })
@@ -187,7 +208,7 @@ class App extends Component {
               this.setState({filterString: text})
             }}/>
           {playlistToRender.map((playlist, i) => 
-            <Playlist playlist={playlist} index={i} />
+            <Playlist playlist={playlist} index={i} connectCode={this.state.connectCode}/>
           )}
 
           <button onClick={() => {
@@ -274,7 +295,7 @@ class App extends Component {
             .then(response => {
               if(response !== "Could not connect") { // TODO: use status code instead
                 this.setState({
-                  connectCode: connectCode, // TODO: add this text somewhere
+                  connectCode: connectCode,
                   venueName: response       // TODO: switch to json instead of text
                 })
                 console.log("Connected to: " + response)
