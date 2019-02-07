@@ -22,14 +22,15 @@ function isEven(number) {
   return number % 2
 }
 
-function vote(connectCode, url) {
+function vote(connectCode, name, url) {
   fetch(backEndUrl + '/vote', {
     method : "PUT",
     headers : {
       'Content-Type': 'application/json;charset=UTF-8'
     },
     body : JSON.stringify({
-      connectCode : connectCode,
+      "connectCode" : connectCode,
+      "songName" : name,
       "songUrl" : url
     })
   })
@@ -98,7 +99,7 @@ class Playlist extends Component {
         }}
         onClick={() => {
           playlist.songs.map(song => {
-            vote(this.props.connectCode, song.url)
+            vote(this.props.connectCode, song.name, song.url)
           })
           alert("voting")
         }}>
@@ -256,6 +257,7 @@ class App extends Component {
               let parsed = queryString.parse(window.location.search);
               let accessToken = parsed.access_token;
               var song;
+              var bestSong;
               fetch(backEndUrl + '/queue?' +
               querystring.stringify({
                 connectCode : this.state.connectCode
@@ -267,6 +269,14 @@ class App extends Component {
               })
               .then(function(response) {
                 song = response[0].url; // TODO: choose top voted and unplayed
+
+                let songs = response;
+                bestSong = songs[0]; // what if no songs?
+                for(let mySong in songs) {
+                  if(mySong.numVotes > bestSong.numVotes) {
+                    bestSong = mySong;
+                  }
+                }
               })
               .then(function() {
                 fetch('https://api.spotify.com/v1/me/player/play', {
@@ -274,9 +284,9 @@ class App extends Component {
                   headers: {
                     'Authorization': 'Bearer ' + accessToken
                   },
-                  body : JSON.stringify({"uris": [song]})
+                  body : JSON.stringify({"uris": [bestSong.url]})
                 })
-                console.log("Playing: " + song)
+                console.log("Playing: " + bestSong.name)
               })
               }
             }
