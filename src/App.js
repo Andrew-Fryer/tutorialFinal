@@ -101,7 +101,7 @@ class App extends Component {
     this.state = {
       serverData: {},
       filterString: '',
-      connectCode: 0
+      connectCode: undefined
     }
   }
   componentDidMount() {
@@ -252,7 +252,7 @@ class App extends Component {
           <button onClick={() => {
             let parsed = queryString.parse(window.location.search);
             let accessToken = parsed.access_token;
-            let song = "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"; // TODO: delete this line
+            var song;
             fetch(backEndUrl + '/queue?' +
             querystring.stringify({
               connectCode : this.state.connectCode
@@ -264,13 +264,16 @@ class App extends Component {
             })
             .then(function(response) {
               song = response[0].url; // TODO: choose top voted and unplayed
-              console.log(JSON.stringify(response));
-              console.log(song)
             })
-            fetch('https://api.spotify.com/v1/me/player/play', {
-              method : "PUT",
-              headers: {'Authorization': 'Bearer ' + accessToken},
-              body : JSON.stringify({"uris": [song]})
+            .then(function() {
+              fetch('https://api.spotify.com/v1/me/player/play', {
+                method : "PUT",
+                headers: {
+                  'Authorization': 'Bearer ' + accessToken
+                },
+                body : JSON.stringify({"uris": [song]})
+              })
+              console.log("Playing: " + song)
             })
             }
           }
