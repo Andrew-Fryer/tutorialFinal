@@ -289,7 +289,18 @@ class App extends Component {
               }
             }
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
-          </div> : <button onClick={() => {
+
+            <button onClick={() => {
+              this.setState({
+                connectCode: undefined,
+                venueName: undefined       // TODO: switch to json instead of text
+              })
+              }
+            }
+            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
+          </div>
+           : 
+          <button onClick={() => {
             let connectCode = prompt("Enter connectCode: ");
             fetch(backEndUrl + '/join?' +
             querystring.stringify({
@@ -315,8 +326,9 @@ class App extends Component {
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
           }
-
-        </div> : <button onClick={() => {
+        </div>
+         : 
+        <button onClick={() => {
             window.location = backEndUrl + '/login'
           }}
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Sign in with Spotify</button>
