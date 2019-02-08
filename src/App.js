@@ -325,7 +325,7 @@ class App extends Component {
             <button onClick={() => {
               this.setState({
                 connectCode: undefined,
-                venueName: undefined       // TODO: switch to json instead of text
+                venueName: undefined
               })
               }
             }
@@ -341,15 +341,16 @@ class App extends Component {
               method : "GET"
             })
             .then(function(response) {
-              return response.text();
+              return response.status == 200 ? response.json() : undefined
             })
             .then(response => {
-              if(response !== "Could not connect") { // TODO: use status code instead
+              if(response) {
+                let venueName = response.venueName
                 this.setState({
                   connectCode: connectCode,
-                  venueName: response       // TODO: switch to json instead of text
+                  venueName: venueName
                 })
-                console.log("Connected to: " + response)
+                console.log("Connected to: " + venueName)
               } else {
                 console.log("Could not connect")
               }
