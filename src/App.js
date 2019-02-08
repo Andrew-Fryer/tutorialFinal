@@ -246,10 +246,7 @@ class App extends Component {
       })
     })
     .then(() => { // will this delay the next song change?
-      console.log(JSON.stringify(bestSong))
-      console.log(bestSong.isDummy)
-      console.log(bestSong.duration)
-      console.log("waiting: " + (Boolean(bestSong) && !Boolean(bestSong.isDummy) ? bestSong.duration * 1000 : 5000) + " milli-seconds")
+      console.log("Waiting: " + bestSong.duration + " seconds")
       setTimeout(() => {this.nextSong()}, bestSong.duration * 1000)
     })
   }
