@@ -247,49 +247,80 @@ class App extends Component {
                 },
                 body : JSON.stringify({
                   connectCode : this.state.connectCode,
-                  "songUrl" : url
+                  songUrl : url
                 })
               })
               }
             }
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
 
-            <button onClick={() => {
-              let parsed = queryString.parse(window.location.search);
-              let accessToken = parsed.access_token;
-              var bestSong;
-              fetch(backEndUrl + '/queue?' +
-              querystring.stringify({
-                connectCode : this.state.connectCode
-              }), {
-                method : "GET"
-              })
-              .then(function(response) {
-                return response.json();
-              })
-              .then(function(response) {
-                let songs = response;
-                bestSong = songs[0]; // what if no songs?
-                for(let i=0; i<songs.length; i++) {
-                  console.log(songs[i])
-                  if(songs[i].numVotes > bestSong.numVotes) {
-                    bestSong = songs[i];
-                  }
-                }
-              })
-              .then(function() {
-                fetch('https://api.spotify.com/v1/me/player/play', {
-                  method : "PUT",
-                  headers: {
-                    'Authorization': 'Bearer ' + accessToken
-                  },
-                  body : JSON.stringify({"uris": [bestSong.url]})
+            {this.state.hostCode ? 
+              <button onClick={() => {
+                let parsed = queryString.parse(window.location.search);
+                let accessToken = parsed.access_token;
+                var bestSong;
+                fetch(backEndUrl + '/queue?' +
+                querystring.stringify({
+                  connectCode : this.state.connectCode
+                }), {
+                  method : "GET"
                 })
-                console.log("Playing: " + bestSong.name)
-              })
+                .then(function(response) {
+                  return response.json();
+                })
+                .then(function(response) {
+                  let songs = response;
+                  if(songs.length > 0) {
+                    bestSong = songs[0];
+                  } else {
+                    bestSong = {url : "Error: no songs in the queue"};
+                  }
+                  bestSong = {
+                    url : "No unPlayed songs in the queue",
+                    name : "No unPlayed songs in the queue",
+                    numVotes : -1
+                  }
+                  for(let i=0; i<songs.length; i++) {
+                    let song = songs[i];
+                    console.log(song.wasPlayed)
+                    if((!song.wasPlayed) && song.numVotes > bestSong.numVotes) {
+                      bestSong = song;
+                    }
+                  }
+                })
+                .then(function() {
+                  fetch('https://api.spotify.com/v1/me/player/play', {
+                    method : "PUT",
+                    headers: {
+                      'Authorization': 'Bearer ' + accessToken
+                    },
+                    body : JSON.stringify({"uris": [bestSong.url]})
+                  })
+                  .then(function(response) {
+                    if(response.status == 204) {
+                      console.log("Playing: " + bestSong.name)
+                    } else {
+                      console.log("Failed to play song")
+                    }
+                  })
+                })
+                .then(() => {
+                  fetch(backEndUrl + '/setPlayed', {
+                    method : "PUT",
+                    headers : {
+                      'Content-Type': 'application/json;charset=UTF-8'
+                    },
+                    body : JSON.stringify({
+                      connectCode : this.state.connectCode,
+                      hostCode : this.state.hostCode,
+                      songUrl : bestSong.url
+                    })
+                  })
+                })
+                }
               }
-            }
-            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+              style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+            : <div></div>}
 
             <button onClick={() => {
               this.setState({
