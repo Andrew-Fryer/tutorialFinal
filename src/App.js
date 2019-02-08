@@ -22,7 +22,7 @@ function isEven(number) {
   return number % 2
 }
 
-function vote(connectCode, name, url) {
+function vote(connectCode, name, url, duration) {
   fetch(backEndUrl + '/vote', {
     method : "PUT",
     headers : {
@@ -31,7 +31,8 @@ function vote(connectCode, name, url) {
     body : JSON.stringify({
       "connectCode" : connectCode,
       "songName" : name,
-      "songUrl" : url
+      "songUrl" : url,
+      "duration" : duration
     })
   })
 }
@@ -99,7 +100,7 @@ class Playlist extends Component {
         }}
         onClick={() => {
           playlist.songs.map(song => {
-            vote(this.props.connectCode, song.name, song.url)
+            vote(this.props.connectCode, song.name, song.url, song.duration)
           })
           alert("voting")
         }}>
@@ -159,7 +160,6 @@ class App extends Component {
           playlists[i].trackDatas = trackData.items
             .map(item => item.track)
             .map(trackData => {
-              console.log(trackData)
               return {
               name: trackData.name,
               url: trackData.uri,
@@ -175,11 +175,83 @@ class App extends Component {
         return {
           name: item.name,
           imageUrl: item.images[0].url, 
-          songs: item.trackDatas.slice(0,3)
+          songs: item.trackDatas
         }
     })
     }))
 
+  }
+  nextSong() {
+    let parsed = queryString.parse(window.location.search);
+    let accessToken = parsed.access_token;
+    var bestSong;
+    fetch(backEndUrl + '/queue?' +
+    querystring.stringify({
+      connectCode : this.state.connectCode
+    }), {
+      method : "GET"
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(response) {
+      let songs = response;
+      bestSong = {
+        url : "No unPlayed songs in the queue",
+        name : "No unPlayed songs in the queue",
+        duration : 5,  // time to wait when no songs
+        numVotes : -1,
+        isDummy : true
+      }
+      for(let i=0; i<songs.length; i++) {
+        let song = songs[i];
+        if((!song.wasPlayed) && song.numVotes > bestSong.numVotes) {
+          bestSong = song;
+        }
+      }
+    })
+    .then(() => {  // if !bestSong.isDummy
+      fetch('https://api.spotify.com/v1/me/player/play', {
+        method : "PUT",
+        headers: {
+          'Authorization': 'Bearer ' + accessToken
+        },
+        body : JSON.stringify({"uris": [bestSong.url]})
+      })
+      .then(response => {
+        if(response.status == 204) {
+          console.log("Playing: " + bestSong.name)
+          this.setState({
+            currentSong : bestSong
+          })
+        } else {
+          console.log("Failed to play song")
+          this.setState({
+            currentSong : undefined
+          })
+        }
+      })
+    })
+    .then(() => {
+      fetch(backEndUrl + '/setPlayed', {
+        method : "PUT",
+        headers : {
+          'Content-Type': 'application/json;charset=UTF-8'
+        },
+        body : JSON.stringify({
+          connectCode : this.state.connectCode,
+          hostCode : this.state.hostCode,
+          songUrl : bestSong.url
+        })
+      })
+    })
+    .then(() => { // will this delay the next song change?
+      console.log(JSON.stringify(bestSong))
+      console.log(bestSong.isDummy)
+      console.log(bestSong.duration)
+      console.log("waiting: " + (Boolean(bestSong) && !Boolean(bestSong.isDummy) ? bestSong.duration * 1000 : 5000) + " milli-seconds")
+      setTimeout(() => {this.nextSong()}, bestSong.duration * 1000)
+    })
   }
   render() {
     let playlistToRender = 
@@ -231,6 +303,7 @@ class App extends Component {
                 venueName : name
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
+              this.nextSong();
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -240,83 +313,14 @@ class App extends Component {
             Connected To: {this.state.venueName}
             <button onClick={() => {
               let url = prompt("Enter song url");
-              fetch(backEndUrl + '/vote', {
-                method : "PUT",
-                headers : {
-                  'Content-Type': 'application/json;charset=UTF-8'
-                },
-                body : JSON.stringify({
-                  connectCode : this.state.connectCode,
-                  songUrl : url
-                })
-              })
+              vote(this.state.connectCode, "From button", url, 10000);
               }
             }
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
 
             {this.state.hostCode ? 
               <button onClick={() => {
-                let parsed = queryString.parse(window.location.search);
-                let accessToken = parsed.access_token;
-                var bestSong;
-                fetch(backEndUrl + '/queue?' +
-                querystring.stringify({
-                  connectCode : this.state.connectCode
-                }), {
-                  method : "GET"
-                })
-                .then(function(response) {
-                  return response.json();
-                })
-                .then(function(response) {
-                  let songs = response;
-                  if(songs.length > 0) {
-                    bestSong = songs[0];
-                  } else {
-                    bestSong = {url : "Error: no songs in the queue"};
-                  }
-                  bestSong = {
-                    url : "No unPlayed songs in the queue",
-                    name : "No unPlayed songs in the queue",
-                    numVotes : -1
-                  }
-                  for(let i=0; i<songs.length; i++) {
-                    let song = songs[i];
-                    console.log(song.wasPlayed)
-                    if((!song.wasPlayed) && song.numVotes > bestSong.numVotes) {
-                      bestSong = song;
-                    }
-                  }
-                })
-                .then(function() {
-                  fetch('https://api.spotify.com/v1/me/player/play', {
-                    method : "PUT",
-                    headers: {
-                      'Authorization': 'Bearer ' + accessToken
-                    },
-                    body : JSON.stringify({"uris": [bestSong.url]})
-                  })
-                  .then(function(response) {
-                    if(response.status == 204) {
-                      console.log("Playing: " + bestSong.name)
-                    } else {
-                      console.log("Failed to play song")
-                    }
-                  })
-                })
-                .then(() => {
-                  fetch(backEndUrl + '/setPlayed', {
-                    method : "PUT",
-                    headers : {
-                      'Content-Type': 'application/json;charset=UTF-8'
-                    },
-                    body : JSON.stringify({
-                      connectCode : this.state.connectCode,
-                      hostCode : this.state.hostCode,
-                      songUrl : bestSong.url
-                    })
-                  })
-                })
+                this.nextSong();
                 }
               }
               style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
