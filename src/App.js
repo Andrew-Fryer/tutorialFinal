@@ -256,7 +256,6 @@ class App extends Component {
             <button onClick={() => {
               let parsed = queryString.parse(window.location.search);
               let accessToken = parsed.access_token;
-              var song;
               var bestSong;
               fetch(backEndUrl + '/queue?' +
               querystring.stringify({
@@ -268,13 +267,12 @@ class App extends Component {
                 return response.json();
               })
               .then(function(response) {
-                song = response[0].url; // TODO: choose top voted and unplayed
-
                 let songs = response;
                 bestSong = songs[0]; // what if no songs?
-                for(let mySong in songs) {
-                  if(mySong.numVotes > bestSong.numVotes) {
-                    bestSong = mySong;
+                for(let i=0; i<songs.length; i++) {
+                  console.log(songs[i])
+                  if(songs[i].numVotes > bestSong.numVotes) {
+                    bestSong = songs[i];
                   }
                 }
               })
