@@ -227,6 +227,7 @@ class App extends Component {
             .then(response => {
               this.setState({
                 connectCode : response.newConnectCode,
+                hostCode : response.newHostCode,
                 venueName : name
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
