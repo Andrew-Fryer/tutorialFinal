@@ -245,7 +245,7 @@ class App extends Component {
         })
       })
     })
-    .then(() => { // will this delay the next song change?
+    .then(() => { // instead, use spotify web player sdk and ".addListener('player_state_changed'"
       console.log("Waiting: " + bestSong.duration + " seconds")
       setTimeout(() => {this.nextSong()}, bestSong.duration * 1000)
     })
