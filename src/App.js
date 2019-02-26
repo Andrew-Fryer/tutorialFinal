@@ -256,26 +256,27 @@ class App extends Component {
       if(window.Spotify) {
         resolve()
       } else {
+        console.log("React loaded before Spotify Player");
         window.onSpotifyWebPlaybackSDKReady = resolve;
       }
     }).then(() => {
-    const player = new window.Spotify.Player({
-      name: 'Web Playback SDK Quick Start Player',
-      getOAuthToken: cb => { cb(this.state.accessToken); }
-    });
-    player.addListener('ready', ({ device_id }) => {
-      console.log('Ready with Device ID', device_id);
-    });
-    player.addListener('player_state_changed', state => { console.log(state); });
-    player.connect()
-    .then(success => {
-      if(success) {
-        console.log("connected to web playback")
-      } else {
-        console.log("failed to connect to web playback")
-      }
+        const player = new window.Spotify.Player({
+          name: 'Web Playback SDK Quick Start Player',
+          getOAuthToken: cb => { cb(this.state.accessToken); }
+      });
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+      player.addListener('player_state_changed', state => { console.log(state); });
+      player.connect()
+      .then(success => {
+        if(success) {
+          console.log("connected to web playback")
+        } else {
+          console.log("failed to connect to web playback")
+        }
+      })
     })
-  })
   }
   render() {
     let playlistToRender = 
@@ -328,6 +329,7 @@ class App extends Component {
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
               //this.nextSong();
+              this.connectToWebPlayer();
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -349,17 +351,13 @@ class App extends Component {
                   }
                 }
                 style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
-                <Script src="https://sdk.scdn.co/spotify-player.js"
-                  onLoad={
-                    this.connectToWebPlayer()
-                  }
-                />
               </div>
             : <div></div>}
 
             <button onClick={() => {
               this.setState({
                 connectCode: undefined,
+                hostCode : undefined,
                 venueName: undefined
               })
               }

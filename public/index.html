@@ -37,6 +37,11 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
 
+    <script>
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        console.log("Spotify Player loaded before React")
+      };
+    </script>
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
   </body>
 </html>
