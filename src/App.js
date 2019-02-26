@@ -182,6 +182,7 @@ class App extends Component {
     }))
   }
   nextSong() {
+    var _this = this;
     var bestSong;
     fetch(backEndUrl + '/queue?' +
     querystring.stringify({
@@ -189,10 +190,10 @@ class App extends Component {
     }), {
       method : "GET"
     })
-    .then(function(response) {
+    .then(response => {
       return response.json();
     })
-    .then(function(response) {
+    .then(response => {
       let songs = response;
       bestSong = {
         url : "No unPlayed songs in the queue",
@@ -209,24 +210,24 @@ class App extends Component {
       }
     })
     .then(() => {  // if !bestSong.isDummy
-      fetch('https://api.spotify.com/v1/me/player/play?' +
-      (this.state.device_id ? querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+      fetch('https://api.spotify.com/v1/me/player/play' +
+      (_this.state.device_id ? "?" + querystring.stringify({"device_id" : _this.state.device_id}) : ""), {
         method : "PUT",
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + this.state.accessToken
+          'Authorization': 'Bearer ' + _this.state.accessToken
         },
         body : JSON.stringify({"uris": [bestSong.url]})
       })
       .then(response => {
         if(response.status === 204) {
           console.log("Playing: " + bestSong.name)
-          this.setState({
+          _this.setState({
             currentSong : bestSong
           })
         } else {
           console.log("Failed to play song")
-          this.setState({
+          _this.setState({
             currentSong : undefined
           })
         }
@@ -239,8 +240,8 @@ class App extends Component {
           'Content-Type': 'application/json;charset=UTF-8'
         },
         body : JSON.stringify({
-          connectCode : this.state.connectCode,
-          hostCode : this.state.hostCode,
+          connectCode : _this.state.connectCode,
+          hostCode : _this.state.hostCode,
           songUrl : bestSong.url
         })
       })
@@ -258,9 +259,14 @@ class App extends Component {
         getOAuthToken: cb => { cb(this.state.accessToken); }
       });
       player.addListener('ready', ({ device_id }) => {
+        this.setState({
+          "device_id" : device_id
+        })
         console.log('Ready with Device ID', device_id);
       });
-      player.addListener('player_state_changed', state => { console.log(state); });
+      player.addListener('player_state_changed', state => {
+        console.log(state);
+      });
       player.connect()
       .then(success => {
         if(success) {
@@ -346,6 +352,7 @@ class App extends Component {
             {this.state.hostCode ? 
               <div>
                 <button onClick={() => {
+                  this.nextSong.bind(this);
                   this.nextSong();
                   }
                 }
