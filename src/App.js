@@ -3,6 +3,7 @@ import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
 import querystring from 'querystring';
+import Script from 'react-load-script';
 
 let defaultStyle = {
   color: '#fff',
@@ -74,7 +75,6 @@ class Filter extends Component {
   render() {
     return (
       <div style={defaultStyle}>
-        <img/>
         <input type="text" onKeyUp={event => 
           this.props.onTextChange(event.target.value)}
           style={{...defaultStyle, 
@@ -99,13 +99,13 @@ class Playlist extends Component {
           : '#808080'
         }}
         onClick={() => {
-          playlist.songs.map(song => {
+          playlist.songs.forEach(song => {
             vote(this.props.connectCode, song.name, song.url, song.duration)
           })
-          alert("voting")
+          console.log("voting")
         }}>
         <h2>{playlist.name}</h2>
-        <img src={playlist.imageUrl} style={{width: '60px'}}/>
+        <img src={playlist.imageUrl} alt="" style={{width: '60px'}}/>
         <ul style={{'margin-top': '10px', 'font-weight': 'bold'}}>
           {playlist.songs.map(song => 
             <li style={{'padding-top': '2px'}}>{song.name}</li>
@@ -129,6 +129,7 @@ class App extends Component {
   componentDidMount() {
     let parsed = queryString.parse(window.location.search);
     let accessToken = parsed.access_token;
+    this.setState({"accessToken" : accessToken})
     if (!accessToken)
       return;
     fetch('https://api.spotify.com/v1/me', {
@@ -179,11 +180,8 @@ class App extends Component {
         }
     })
     }))
-
   }
   nextSong() {
-    let parsed = queryString.parse(window.location.search);
-    let accessToken = parsed.access_token;
     var bestSong;
     fetch(backEndUrl + '/queue?' +
     querystring.stringify({
@@ -211,15 +209,17 @@ class App extends Component {
       }
     })
     .then(() => {  // if !bestSong.isDummy
-      fetch('https://api.spotify.com/v1/me/player/play', {
+      fetch('https://api.spotify.com/v1/me/player/play?' +
+      (this.state.device_id ? querystring.stringify({"device_id" : this.state.device_id}) : ""), {
         method : "PUT",
         headers: {
-          'Authorization': 'Bearer ' + accessToken
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.state.accessToken
         },
         body : JSON.stringify({"uris": [bestSong.url]})
       })
       .then(response => {
-        if(response.status == 204) {
+        if(response.status === 204) {
           console.log("Playing: " + bestSong.name)
           this.setState({
             currentSong : bestSong
@@ -244,11 +244,38 @@ class App extends Component {
           songUrl : bestSong.url
         })
       })
-    })
+    })/*
     .then(() => { // instead, use spotify web player sdk and ".addListener('player_state_changed'"
       console.log("Waiting: " + bestSong.duration + " seconds")
       setTimeout(() => {this.nextSong()}, bestSong.duration * 1000)
+    })*/
+  }
+  connectToWebPlayer() {
+    return new Promise(resolve => {
+      console.log("here 235254")
+      if(window.Spotify) {
+        resolve()
+      } else {
+        window.onSpotifyWebPlaybackSDKReady = resolve;
+      }
+    }).then(() => {
+    const player = new window.Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(this.state.accessToken); }
+    });
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+    });
+    player.addListener('player_state_changed', state => { console.log(state); });
+    player.connect()
+    .then(success => {
+      if(success) {
+        console.log("connected to web playback")
+      } else {
+        console.log("failed to connect to web playback")
+      }
     })
+  })
   }
   render() {
     let playlistToRender = 
@@ -300,7 +327,7 @@ class App extends Component {
                 venueName : name
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
-              this.nextSong();
+              //this.nextSong();
             })}
           }
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -316,11 +343,18 @@ class App extends Component {
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
 
             {this.state.hostCode ? 
-              <button onClick={() => {
-                this.nextSong();
+              <div>
+                <button onClick={() => {
+                  this.nextSong();
+                  }
                 }
-              }
-              style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+                <Script src="https://sdk.scdn.co/spotify-player.js"
+                  onLoad={
+                    this.connectToWebPlayer()
+                  }
+                />
+              </div>
             : <div></div>}
 
             <button onClick={() => {
@@ -342,7 +376,7 @@ class App extends Component {
               method : "GET"
             })
             .then(function(response) {
-              return response.status == 200 ? response.json() : undefined
+              return response.status === 200 ? response.json() : undefined
             })
             .then(response => {
               if(response) {
