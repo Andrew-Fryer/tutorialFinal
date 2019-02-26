@@ -251,18 +251,11 @@ class App extends Component {
     })*/
   }
   connectToWebPlayer() {
-    return new Promise(resolve => {
-      console.log("here 235254")
-      if(window.Spotify) {
-        resolve()
-      } else {
-        console.log("React loaded before Spotify Player");
-        window.onSpotifyWebPlaybackSDKReady = resolve;
-      }
-    }).then(() => {
-        const player = new window.Spotify.Player({
-          name: 'Web Playback SDK Quick Start Player',
-          getOAuthToken: cb => { cb(this.state.accessToken); }
+    let connectFunction = () => {
+      console.log("connecting to Spotify Web Playback SDK")
+      const player = new window.Spotify.Player({
+        name: 'Web Playback SDK Quick Start Player',
+        getOAuthToken: cb => { cb(this.state.accessToken); }
       });
       player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);
@@ -276,7 +269,13 @@ class App extends Component {
           console.log("failed to connect to web playback")
         }
       })
-    })
+    }
+    if(window.Spotify) {
+      connectFunction();
+    } else {
+      console.log("waiting for Spotify script to load")
+      window.onSpotifyWebPlaybackSDKReady = connectFunction;
+    }
   }
   render() {
     let playlistToRender = 
