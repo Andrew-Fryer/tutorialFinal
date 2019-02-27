@@ -266,6 +266,9 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
+        if(state.track_window.currnent_track.uri !== this.state.currentSong.url) {
+          this.nextSong();
+        }
       });
       player.connect()
       .then(success => {
@@ -282,6 +285,9 @@ class App extends Component {
       console.log("waiting for Spotify script to load")
       window.onSpotifyWebPlaybackSDKReady = connectFunction;
     }
+    this.setState({
+      webPlayer : player
+    })
   }
   render() {
     let playlistToRender = 
@@ -366,8 +372,10 @@ class App extends Component {
                 hostCode : undefined,
                 venueName: undefined
               })
+              if(this.state.webPlayer) {
+                this.state.webPlayer.disconnect();
               }
-            }
+            }}
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
           </div>
            : 
