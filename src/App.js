@@ -265,7 +265,7 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
-        if(state.track_window.currnent_track.uri !== this.state.currentSong.url) {
+        if(state.track_window.current_track.uri !== this.state.currentSong.url) {
           this.nextSong();
         }
       });
