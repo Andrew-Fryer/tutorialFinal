@@ -3,7 +3,6 @@ import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
 import querystring from 'querystring';
-import Script from 'react-load-script';
 
 let defaultStyle = {
   color: '#fff',
@@ -278,6 +277,9 @@ class App extends Component {
           console.log("failed to connect to web playback")
         }
       })
+      this.setState({
+        webPlayer : player
+      })
     }
     if(window.Spotify) {
       connectFunction();
@@ -285,9 +287,6 @@ class App extends Component {
       console.log("waiting for Spotify script to load")
       window.onSpotifyWebPlaybackSDKReady = connectFunction;
     }
-    this.setState({
-      webPlayer : player
-    })
   }
   render() {
     let playlistToRender = 
