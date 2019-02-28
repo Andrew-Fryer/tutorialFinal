@@ -251,7 +251,7 @@ class App extends Component {
     })*/
   }
   connectToWebPlayer() {
-    let _this = this;
+    var _this = this;
     let connectFunction = () => {
       console.log("connecting to Spotify Web Playback SDK")
       const player = new window.Spotify.Player({
@@ -266,10 +266,14 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
-        if(state.track_window.current_track.uri !== _this.state.currentSong.url
-            || state.paused) {
+        if(_this.state.currentSong === undefined
+            || state.track_window.current_track.uri !== _this.state.currentSong.url
+            || (state.paused && _this.state.isPlaying)) {
               _this.nextSong();
         }
+        _this.setState({
+          isPlaying : !state.paused
+        })
       });
       player.connect()
       .then(success => {
@@ -321,6 +325,49 @@ class App extends Component {
             <Playlist playlist={playlist} index={i} connectCode={this.state.connectCode}/>
           )}
 
+          {this.state.isPlaying === true &&
+            <button onClick={() => {
+              fetch('https://api.spotify.com/v1/me/player/pause' +
+              (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                method : "PUT",
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + this.state.accessToken
+                }
+              })
+              .then(response => {
+                if(response.status === 204) {
+                  this.setState({
+                    isPlaying : false
+                  })
+                } else {
+                  throw new Error("failed to pause song")
+                }
+              })
+            }}>Pause</button>
+          }
+          {this.state.isPlaying === false &&
+            <button onClick={() => {
+              fetch('https://api.spotify.com/v1/me/player/play' +
+              (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                method : "PUT",
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + this.state.accessToken
+                }
+              })
+              .then(response => {
+                if(response.status ===204) {
+                  this.setState({
+                    isPlaying : true
+                  })
+                } else {
+                  throw new Error("failed to resume song")
+                }
+              })
+            }}>Play</button>
+          }
+
           <button onClick={() => {
             let name = prompt("Enter name: ");
             fetch(backEndUrl + '/create', {
@@ -360,9 +407,8 @@ class App extends Component {
               <div>
                 <button onClick={() => {
                   this.nextSong.bind(this);
-                  this.nextSong();
-                  }
-                }
+                  this.nextSong()
+                }}
                 style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
               </div>
             : <div>Connecting to web player</div>)}
