@@ -251,22 +251,24 @@ class App extends Component {
     })*/
   }
   connectToWebPlayer() {
+    let _this = this;
     let connectFunction = () => {
       console.log("connecting to Spotify Web Playback SDK")
       const player = new window.Spotify.Player({
-        name: 'Web Playback SDK Quick Start Player',
-        getOAuthToken: cb => { cb(this.state.accessToken); }
+        name: 'The Queue Player',
+        getOAuthToken: cb => { cb(_this.state.accessToken); }
       });
       player.addListener('ready', ({ device_id }) => {
-        this.setState({
+          _this.setState({
           "device_id" : device_id
         })
         console.log('Ready with Device ID', device_id);
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
-        if(state.position === 0) {
-          this.nextSong();
+        if(state.track_window.current_track.uri !== _this.state.currentSong.url
+            || state.paused) {
+              _this.nextSong();
         }
       });
       player.connect()
@@ -277,7 +279,7 @@ class App extends Component {
           console.log("failed to connect to web playback")
         }
       })
-      this.setState({
+      _this.setState({
         webPlayer : player
       })
     }
