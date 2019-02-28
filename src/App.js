@@ -195,9 +195,6 @@ class App extends Component {
     .then(response => {
       let songs = response;
       bestSong = {
-        url : "No unPlayed songs in the queue",
-        name : "No unPlayed songs in the queue",
-        duration : 5,  // time to wait when no songs
         numVotes : -1,
         isDummy : true
       }
@@ -207,8 +204,11 @@ class App extends Component {
           bestSong = song;
         }
       }
+      if(bestSong.isDummy) {
+        throw new Error("No unplayed songs in the queue")
+      }
     })
-    .then(() => {  // if !bestSong.isDummy
+    .then(() => {
       fetch('https://api.spotify.com/v1/me/player/play' +
       (_this.state.device_id ? "?" + querystring.stringify({"device_id" : _this.state.device_id}) : ""), {
         method : "PUT",
@@ -225,10 +225,10 @@ class App extends Component {
             currentSong : bestSong
           })
         } else {
-          console.log("Failed to play song")
           _this.setState({
             currentSong : undefined
           })
+          throw new Error("Failed to play song"); // don't setPlayed
         }
       })
     })
@@ -265,7 +265,7 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
-        if(state.track_window.current_track.uri !== this.state.currentSong.url) {
+        if(state.position === 0) {
           this.nextSong();
         }
       });
@@ -354,7 +354,7 @@ class App extends Component {
             }
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
 
-            {this.state.hostCode ? 
+            {this.state.hostCode && (this.state.device_id ? 
               <div>
                 <button onClick={() => {
                   this.nextSong.bind(this);
@@ -363,7 +363,7 @@ class App extends Component {
                 }
                 style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
               </div>
-            : <div></div>}
+            : <div>Connecting to web player</div>)}
 
             <button onClick={() => {
               this.setState({
