@@ -22,21 +22,6 @@ function isEven(number) {
   return number % 2
 }
 
-function vote(connectCode, name, url, duration) {
-  fetch(backEndUrl + '/vote', {
-    method : "PUT",
-    headers : {
-      'Content-Type': 'application/json;charset=UTF-8'
-    },
-    body : JSON.stringify({
-      "connectCode" : connectCode,
-      "songName" : name,
-      "songUrl" : url,
-      "duration" : duration
-    })
-  })
-}
-
 class PlaylistCounter extends Component {
   render() {
     let playlistCounterStyle = counterStyle
@@ -54,7 +39,7 @@ class HoursCounter extends Component {
       return songs.concat(eachPlaylist.songs)
     }, [])
     let totalDuration = allSongs.reduce((sum, eachSong) => {
-      return sum + eachSong.duration
+      return sum + eachSong.duration_ms / 1000
     }, 0)
     let totalDurationHours = Math.round(totalDuration/60)
     let isTooLow = totalDurationHours < 40
@@ -98,8 +83,8 @@ class Playlist extends Component {
           : '#808080'
         }}
         onClick={() => {
-          playlist.songs.forEach(song => {
-            vote(this.props.connectCode, song.name, song.url, song.duration)
+          playlist.songs.forEach(track => {
+            this.props.vote(track)
           })
           console.log("voting")
         }}>
@@ -119,7 +104,6 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      serverData: {},
       filterString: '',
       connectCode: undefined,
       venueName: undefined
@@ -159,12 +143,6 @@ class App extends Component {
         trackDatas.forEach((trackData, i) => {
           playlists[i].trackDatas = trackData.items
             .map(item => item.track)
-            .map(trackData => {
-              return {
-              name: trackData.name,
-              url: trackData.uri,
-              duration: trackData.duration_ms / 1000
-            }})
         })
         return playlists
       })
@@ -179,10 +157,26 @@ class App extends Component {
         }
     })
     }))
+
+    fetch('https://api.spotify.com/v1/me/player/recently-played?type=track&limit=10', {
+      headers: {'Authorization': 'Bearer ' + accessToken}
+    })
+    .then(function(response) {
+      if(response.status === 200) {
+        return response.json()
+      } else {
+        throw new Error("Could not get recently played songs")
+      }
+    })
+    .then(response => {
+      this.setState({
+        recentlyPlayed : response.items.map(item => item.track)
+      })
+    })
   }
-  nextSong() {
+  nextTrack() {
     var _this = this;
-    var bestSong;
+    var bestTrack;
     fetch(backEndUrl + '/queue?' +
     querystring.stringify({
       connectCode : this.state.connectCode
@@ -193,18 +187,18 @@ class App extends Component {
       return response.json();
     })
     .then(response => {
-      let songs = response;
-      bestSong = {
+      let tracks = response;
+      bestTrack = {
         numVotes : -1,
         isDummy : true
       }
-      for(let i=0; i<songs.length; i++) {
-        let song = songs[i];
-        if((!song.wasPlayed) && song.numVotes > bestSong.numVotes) {
-          bestSong = song;
+      for(let i=0; i<tracks.length; i++) {
+        let track = tracks[i];
+        if((!track.wasPlayed) && track.numVotes > bestTrack.numVotes) {
+          bestTrack = track;
         }
       }
-      if(bestSong.isDummy) {
+      if(bestTrack.isDummy) {
         throw new Error("No unplayed songs in the queue")
       }
     })
@@ -216,17 +210,17 @@ class App extends Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + _this.state.accessToken
         },
-        body : JSON.stringify({"uris": [bestSong.url]})
+        body : JSON.stringify({"uris": [bestTrack.uri]})
       })
       .then(response => {
         if(response.status === 204) {
-          console.log("Playing: " + bestSong.name)
+          console.log("Playing: " + bestTrack.name)
           _this.setState({
-            currentSong : bestSong
+            current_track : bestTrack
           })
         } else {
           _this.setState({
-            currentSong : undefined
+            current_track : undefined
           })
           throw new Error("Failed to play song"); // don't setPlayed
         }
@@ -241,14 +235,10 @@ class App extends Component {
         body : JSON.stringify({
           connectCode : _this.state.connectCode,
           hostCode : _this.state.hostCode,
-          songUrl : bestSong.url
+          track : bestTrack
         })
       })
-    })/*
-    .then(() => { // instead, use spotify web player sdk and ".addListener('player_state_changed'"
-      console.log("Waiting: " + bestSong.duration + " seconds")
-      setTimeout(() => {this.nextSong()}, bestSong.duration * 1000)
-    })*/
+    })
   }
   connectToWebPlayer() {
     var _this = this;
@@ -266,10 +256,10 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
-        if(_this.state.currentSong === undefined
-            || state.track_window.current_track.uri !== _this.state.currentSong.url
+        if(_this.state.current_track === undefined
+            || state.track_window.current_track.uri !== _this.state.current_track.uri
             || (state.paused && _this.state.isPlaying)) {
-              _this.nextSong();
+              _this.nextTrack();
         }
         _this.setState({
           isPlaying : !state.paused
@@ -293,6 +283,18 @@ class App extends Component {
       console.log("waiting for Spotify script to load")
       window.onSpotifyWebPlaybackSDKReady = connectFunction;
     }
+  }
+  vote(track) {
+    fetch(backEndUrl + '/vote', {
+      method : "PUT",
+      headers : {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body : JSON.stringify({
+        "connectCode" : this.state.connectCode,
+        "track" : track
+      })
+    })
   }
   render() {
     let playlistToRender = 
@@ -322,7 +324,7 @@ class App extends Component {
               this.setState({filterString: text})
             }}/>
           {playlistToRender.map((playlist, i) => 
-            <Playlist playlist={playlist} index={i} connectCode={this.state.connectCode}/>
+            <Playlist playlist={playlist} index={i} vote={(t) => this.vote(t)}/>
           )}
 
           {this.state.isPlaying === true &&
@@ -387,7 +389,6 @@ class App extends Component {
                 venueName : name
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
-              //this.nextSong();
               this.connectToWebPlayer();
             })}
           }
@@ -395,19 +396,12 @@ class App extends Component {
 
           {this.state.connectCode ?
           <div> 
-            Connected To: {this.state.venueName}
-            <button onClick={() => {
-              let url = prompt("Enter song url");
-              vote(this.state.connectCode, "From button", url, 10000);
-              }
-            }
-            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Vote</button>
-
+            <h2>Connected To: {this.state.venueName}</h2>
             {this.state.hostCode && (this.state.device_id ? 
               <div>
                 <button onClick={() => {
-                  this.nextSong.bind(this);
-                  this.nextSong()
+                  this.nextTrack.bind(this);
+                  this.nextTrack()
                 }}
                 style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
               </div>
@@ -435,19 +429,19 @@ class App extends Component {
               method : "GET"
             })
             .then(function(response) {
-              return response.status === 200 ? response.json() : undefined
+              if(response.status === 200) {
+                return response.json()
+              } else {
+                throw new Error("Failed to join veneue")
+              }
             })
             .then(response => {
-              if(response) {
-                let venueName = response.venueName
-                this.setState({
-                  connectCode: connectCode,
-                  venueName: venueName
-                })
-                console.log("Connected to: " + venueName)
-              } else {
-                console.log("Could not connect")
-              }
+              let venueName = response.venueName
+              this.setState({
+                connectCode: connectCode,
+                venueName: venueName
+              })
+              console.log("Connected to: " + venueName)
             })
             }
           }
