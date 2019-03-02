@@ -174,6 +174,20 @@ class App extends Component {
       })
     })
   }
+  upDateQueue() {
+    fetch(backEndUrl + '/queue?' +
+    querystring.stringify({
+      connectCode : this.state.connectCode
+    }), {
+      method : "GET"
+    })
+    .then(response => {
+      return response.json();
+    })
+    .then(queue => {
+      this.setState({queue : queue});
+    })
+  }
   nextTrack() {
     var _this = this;
     var bestTrack;
@@ -307,11 +321,15 @@ class App extends Component {
             .includes(this.state.filterString.toLowerCase()))
           return matchesPlaylist || matchesSong
         }) : []
+    let trackToRender = 3
     return (
       <div className="App">
         {this.state.user ?
         <div>
-          <h1> See I (Andrew Fryer) can modify everything! </h1>
+          <h1 style={{
+            'font-size': '54px',
+            'margin-top': '5px'
+          }}>The Queue</h1>
           <h1 style={{...defaultStyle, 
             'font-size': '54px',
             'margin-top': '5px'
@@ -390,8 +408,10 @@ class App extends Component {
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
               this.connectToWebPlayer();
-            })}
-          }
+            })
+            clearInterval();
+            setInterval((() => this.upDateQueue()), 3000)
+          }}
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
 
           {this.state.connectCode ?
