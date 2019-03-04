@@ -106,7 +106,8 @@ class App extends Component {
     this.state = {
       filterString: '',
       connectCode: undefined,
-      venueName: undefined
+      venueName: undefined,
+      searchResults : []
     }
   }
   componentDidMount() {
@@ -310,6 +311,35 @@ class App extends Component {
       })
     })
   }
+  searchSpotify(text) {
+    let _this = this
+    if(text !== '') {
+      fetch('https://api.spotify.com/v1/search?' +
+        querystring.stringify({
+          q : text,
+          type : "track",
+          limit : "10"
+        }), {
+        headers: {'Authorization': 'Bearer ' + _this.state.accessToken}
+      })
+      .then(function(response) {
+        if(response.status === 200) {
+          return response.json()
+        } else {
+          throw new Error("Could not search Spotify")
+        }
+      })
+      .then(response => {
+        _this.setState({
+          searchResults : response.tracks.items
+        })
+      })
+    } else {
+      _this.setState({
+        searchResults : []
+      })
+    }
+  }
   render() {
     let playlistToRender = 
       this.state.user && 
@@ -321,7 +351,6 @@ class App extends Component {
             .includes(this.state.filterString.toLowerCase()))
           return matchesPlaylist || matchesSong
         }) : []
-    let trackToRender = 3
     return (
       <div className="App">
         {this.state.user ?
@@ -344,6 +373,10 @@ class App extends Component {
           {playlistToRender.map((playlist, i) => 
             <Playlist playlist={playlist} index={i} vote={(t) => this.vote(t)}/>
           )}
+
+          <Filter onTextChange={text => {
+            this.searchSpotify(text)
+          }}/>
 
           {this.state.isPlaying === true &&
             <button onClick={() => {
