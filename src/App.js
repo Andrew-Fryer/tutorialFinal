@@ -43,9 +43,12 @@ class Playlist extends Component {
           : '#808080'
         }}
         onClick={() => {
-          playlist.songs.forEach(track => {
-            this.props.vote(track)
-          })
+          if(this.props.connected) {
+            playlist.songs.forEach(track => {
+              this.props.vote(track)
+              console.log("voting for: " + track.name)
+            })
+          }
         }}>
         <h2>{playlist.name}</h2>
         <img src={playlist.imageUrl} alt="" style={{width: '60px'}}/>
@@ -59,13 +62,28 @@ class Playlist extends Component {
   }
 }
 
+class Song extends Component {
+  render() { return (
+    <div onClick={() => {
+      if(this.props.connected) {
+        this.props.vote(this.props.track)
+        console.log("voting for: " + this.props.track.name)
+      }
+    }}>
+      {this.props.track.name}
+    </div>
+  )}
+}
+
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      filterString: '',
+      playlistSearch: '',
       connectCode: undefined,
       venueName: undefined,
+      recentlyPlayed : [],
+      recentlyPlayedSearch : '',
       searchResults : []
     }
   }
@@ -305,11 +323,18 @@ class App extends Component {
       this.state.playlists 
         ? this.state.playlists.filter(playlist => {
           let matchesPlaylist = playlist.name.toLowerCase().includes(
-            this.state.filterString.toLowerCase()) 
+            this.state.playlistSearch.toLowerCase()) 
           let matchesSong = playlist.songs.find(song => song.name.toLowerCase()
-            .includes(this.state.filterString.toLowerCase()))
+            .includes(this.state.playlistSearch.toLowerCase()))
           return matchesPlaylist || matchesSong
         }) : []
+    let recentlyPlayedToRender = 
+      this.state.user &&
+      this.state.recentlyPlayed.filter(track =>
+        track.name.toLowerCase().includes(
+          this.state.recentlyPlayedSearch.toLowerCase()
+        )
+      )
     return (
       <div className="App">
         {this.state.user ?
@@ -324,21 +349,31 @@ class App extends Component {
           }}>
             Welcome, {this.state.user.name}.
           </h1>
+
+          Search Your Playlists:
           <Filter onTextChange={text => {
-              this.setState({filterString: text})
+              this.setState({playlistSearch: text})
             }}/>
           {playlistToRender.map((playlist, i) => 
-            <Playlist playlist={playlist} index={i} vote={(track) => {
-              if(this.state.connectCode){
-                this.vote(track)
-                console.log("voting for: " + track.name)
-              }
-            }}/>
+            <Playlist playlist={playlist} index={i}
+              connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
           )}
 
+          Search Your Recently Played Songs:
+          <Filter onTextChange={text => {
+              this.setState({recentlyPlayedSearch: text})
+            }}/>
+          {recentlyPlayedToRender.map(track => 
+            <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+          )}
+
+          Search Spotify:
           <Filter onTextChange={text => {
             this.searchSpotify(text)
           }}/>
+          {this.state.searchResults.map(track => 
+            <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+          )}
 
           {this.state.isPlaying === true &&
             <button onClick={() => {
