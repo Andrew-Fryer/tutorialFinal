@@ -403,9 +403,12 @@ class App extends Component {
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
               this.connectToWebPlayer();
+              if(window.updateQueueIntervalId) {
+                clearInterval(window.updateQueueIntervalId);
+              }
+              let intervalId = setInterval((() => this.upDateQueue()), 3000)
+              window.updateQueueIntervalId = intervalId
             })
-            clearInterval();
-            setInterval((() => this.upDateQueue()), 3000)
           }}
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
 
@@ -430,6 +433,9 @@ class App extends Component {
               })
               if(this.state.webPlayer) {
                 this.state.webPlayer.disconnect();
+              }
+              if(window.updateQueueIntervalId) {
+                clearInterval(window.updateQueueIntervalId);
               }
             }}
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
@@ -457,6 +463,11 @@ class App extends Component {
                 venueName: venueName
               })
               console.log("Connected to: " + venueName)
+              if(window.updateQueueIntervalId) {
+                clearInterval(window.updateQueueIntervalId);
+              }
+              let intervalId = setInterval((() => this.upDateQueue()), 3000)
+              window.updateQueueIntervalId = intervalId
             })
             }
           }
