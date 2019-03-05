@@ -46,7 +46,6 @@ class Playlist extends Component {
           playlist.songs.forEach(track => {
             this.props.vote(track)
           })
-          console.log("voting")
         }}>
         <h2>{playlist.name}</h2>
         <img src={playlist.imageUrl} alt="" style={{width: '60px'}}/>
@@ -329,7 +328,12 @@ class App extends Component {
               this.setState({filterString: text})
             }}/>
           {playlistToRender.map((playlist, i) => 
-            <Playlist playlist={playlist} index={i} vote={(t) => this.vote(t)}/>
+            <Playlist playlist={playlist} index={i} vote={(track) => {
+              if(this.state.connectCode){
+                this.vote(track)
+                console.log("voting for: " + track.name)
+              }
+            }}/>
           )}
 
           <Filter onTextChange={text => {
