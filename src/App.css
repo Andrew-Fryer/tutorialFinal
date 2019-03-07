@@ -1,7 +1,21 @@
+html {
+  display: block;
+}
+
 html, body {
-  background-color: gray;
+  padding: 0;
+  height: 100%;
+  margin: 0px;
+  overflow: hidden;
+}
+
+head {
+  display: none;
 }
 
 body {
-  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  background: url(https://data.whicdn.com/images/311865499/original.jpg?t=1525554149);
+  background-size: 100% 100%;
 }
