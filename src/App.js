@@ -342,6 +342,11 @@ class App extends Component {
         .slice(0, 10)
     return (
       <div className="App">
+        <div>
+          <img src="Logo.png" width="100"/>
+          <h1 style={{display : inline}}>The Queue</h1>
+        </div>
+
         {!this.state.user ?
           <div>
             <button onClick={() => {
