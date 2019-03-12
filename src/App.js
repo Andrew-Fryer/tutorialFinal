@@ -343,8 +343,27 @@ class App extends Component {
     return (
       <div className="App">
         <div>
-          <img src="Logo.png" width="100"/>
-          <h1 style={{display : inline}}>The Queue</h1>
+          <img src="Logo.png" alt="couldn't load Logo.png" width="100"/>
+          <h1 style={{display: "inline-block"}}>The Queue</h1>
+          {this.state.user && <h1 style={{display: "inline-block"}}>Signed in as {this.state.user.name}.</h1>}
+          {this.state.connectCode && <span>
+            <h2 style={{display: "inline-block"}}>Connected To {this.state.venueName}</h2>
+            <h1 style={{display: "inline-block"}}>Party Code is: {this.state.connectCode}</h1>
+            <button style={{display: "inline-block"}} onClick={() => {
+              this.setState({
+                connectCode: undefined,
+                hostCode : undefined,
+                venueName: undefined
+              })
+              if(this.state.webPlayer) {
+                this.state.webPlayer.disconnect();
+              }
+              if(window.updateQueueIntervalId) {
+                clearInterval(window.updateQueueIntervalId);
+              }
+            }}
+            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
+          </span>}
         </div>
 
         {!this.state.user ?
@@ -357,13 +376,6 @@ class App extends Component {
           </div>
         :
           <div>
-            <h1 style={{...defaultStyle, 
-              'font-size': '20px',
-              'margin-top': '5px'
-            }}>
-              Signed in as {this.state.user.name}.
-            </h1>
-
             {!this.state.connectCode ?
               <div>
                 <button onClick={() => {
@@ -430,22 +442,6 @@ class App extends Component {
               </div>
             :
               <div>
-                <h2>Connected To {this.state.venueName}</h2>
-                <h1>Party Code is: {this.state.connectCode}</h1>
-                <button onClick={() => {
-                  this.setState({
-                    connectCode: undefined,
-                    hostCode : undefined,
-                    venueName: undefined
-                  })
-                  if(this.state.webPlayer) {
-                    this.state.webPlayer.disconnect();
-                  }
-                  if(window.updateQueueIntervalId) {
-                    clearInterval(window.updateQueueIntervalId);
-                  }
-                }}
-                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
                 <h2>The Queue:</h2>
                 {queueToRender.map(track =>
                   <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
