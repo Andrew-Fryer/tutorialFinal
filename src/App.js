@@ -9,13 +9,7 @@ let backEndUrl = window.location.href.includes('localhost') ? "http://localhost:
 
 const socket = io(backEndUrl)
 socket.on('connect', () => {
-  console.log("we are now connected !!!!")
-})
-window.getQueue = connectCode => {
-  socket.emit('getQueue', connectCode)
-}
-socket.on('getQueue', () => {
-  console.log("we got the queue!")
+  console.log("connected to backend socket")
 })
 
 let defaultStyle = {
@@ -163,19 +157,12 @@ class App extends Component {
         recentlyPlayed : response.items.map(item => item.track)
       })
     })
-  }
-  upDateQueue() {
-    fetch(backEndUrl + '/queue?' +
-    querystring.stringify({
-      connectCode : this.state.connectCode
-    }), {
-      method : "GET"
-    })
-    .then(response => {
-      return response.json();
-    })
-    .then(queue => {
-      this.setState({queue : queue});
+
+    console.log("why isn't this being run on the sign in screen?")
+    socket.on('updatedQueue', queue => {
+      this.setState({
+        queue : queue
+      })
     })
   }
   nextTrack() {
@@ -388,8 +375,6 @@ class App extends Component {
             <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
           )}
 
-          <button onClick={() => window.getQueue(this.state.connectCode)}>update Queue</button>
-
           {this.state.isPlaying === true &&
             <button onClick={() => {
               fetch('https://api.spotify.com/v1/me/player/pause' +
@@ -452,12 +437,8 @@ class App extends Component {
                 venueName : name
               })
               console.log("connectCode: " + JSON.stringify(response.newConnectCode))
-              this.connectToWebPlayer();
-              if(window.updateQueueIntervalId) {
-                clearInterval(window.updateQueueIntervalId);
-              }
-              let intervalId = setInterval((() => this.upDateQueue()), 3000)
-              window.updateQueueIntervalId = intervalId
+              this.connectToWebPlayer()
+              socket.emit('joinVenue', response.newConnectCode)
             })
           }}
           style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
@@ -476,6 +457,7 @@ class App extends Component {
             : <div>Connecting to web player</div>)}
 
             <button onClick={() => {
+              socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
                 hostCode : undefined,
@@ -483,9 +465,6 @@ class App extends Component {
               })
               if(this.state.webPlayer) {
                 this.state.webPlayer.disconnect();
-              }
-              if(window.updateQueueIntervalId) {
-                clearInterval(window.updateQueueIntervalId);
               }
             }}
             style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
@@ -513,11 +492,7 @@ class App extends Component {
                 venueName: venueName
               })
               console.log("Connected to: " + venueName)
-              if(window.updateQueueIntervalId) {
-                clearInterval(window.updateQueueIntervalId);
-              }
-              let intervalId = setInterval((() => this.upDateQueue()), 3000)
-              window.updateQueueIntervalId = intervalId
+              socket.emit('joinVenue', connectCode)
             })
             }
           }
