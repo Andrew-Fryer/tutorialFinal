@@ -346,7 +346,7 @@ class App extends Component {
           <img src="Logo.png" alt="couldn't load Logo.png" width="100"/>
           <h1 style={{display: "inline-block"}}>The Queue</h1>
           {this.state.user && <h1 style={{display: "inline-block"}}>Signed in as {this.state.user.name}.</h1>}
-          {this.state.connectCode && <span>
+          {this.state.connectCode && <div style={{display:"inline"}}>
             <h2 style={{display: "inline-block"}}>Connected To {this.state.venueName}</h2>
             <h1 style={{display: "inline-block"}}>Party Code is: {this.state.connectCode}</h1>
             <button style={{display: "inline-block"}} onClick={() => {
@@ -362,8 +362,8 @@ class App extends Component {
                 clearInterval(window.updateQueueIntervalId);
               }
             }}
-            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
-          </span>}
+            /*style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}*/>Leave</button>
+          </div>}
         </div>
 
         {!this.state.user ?
@@ -442,33 +442,40 @@ class App extends Component {
               </div>
             :
               <div>
-                <h2>The Queue:</h2>
-                {queueToRender.map(track =>
-                  <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                )}
-                <h2>Search Your Playlists:</h2>
-                <Filter onTextChange={text => {
-                    this.setState({playlistSearch: text})
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>The Queue:</h2>
+                  {queueToRender.map(track =>
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Your Playlists:</h2>
+                  <Filter onTextChange={text => {
+                      this.setState({playlistSearch: text})
+                    }}/>
+                  {playlistToRender.map((playlist, i) => 
+                    <Playlist playlist={playlist} index={i}
+                      connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Your Recently Played Songs:</h2>
+                  <Filter onTextChange={text => {
+                      this.setState({recentlyPlayedSearch: text})
+                    }}/>
+                  {recentlyPlayedToRender.map(track => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Spotify:</h2>
+                  <Filter onTextChange={text => {
+                    this.searchSpotify(text)
                   }}/>
-                {playlistToRender.map((playlist, i) => 
-                  <Playlist playlist={playlist} index={i}
-                    connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                )}
-                <h2>Search Your Recently Played Songs:</h2>
-                <Filter onTextChange={text => {
-                    this.setState({recentlyPlayedSearch: text})
-                  }}/>
-                {recentlyPlayedToRender.map(track => 
-                  <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                )}
-
-                <h2>Search Spotify:</h2>
-                <Filter onTextChange={text => {
-                  this.searchSpotify(text)
-                }}/>
-                {this.state.searchResults.map(track => 
-                  <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                )}
+                  {this.state.searchResults.map(track => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
 
                 {this.state.isPlaying === true &&
                   <button onClick={() => {
