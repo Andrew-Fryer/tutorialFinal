@@ -3,13 +3,25 @@ import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
 import querystring from 'querystring';
+import io from 'socket.io-client'
+
+let backEndUrl = window.location.href.includes('localhost') ? "http://localhost:8888" : "https://mod3backend.herokuapp.com"
+
+const socket = io(backEndUrl)
+socket.on('connect', () => {
+  console.log("we are now connected !!!!")
+})
+window.getQueue = connectCode => {
+  socket.emit('getQueue', connectCode)
+}
+socket.on('getQueue', () => {
+  console.log("we got the queue!")
+})
 
 let defaultStyle = {
   color: '#fff',
   'font-family': 'Papyrus'
 };
-
-let backEndUrl = window.location.href.includes('localhost') ? "http://localhost:8888" : "https://mod3backend.herokuapp.com"
 
 function isEven(number) {
   return number % 2
@@ -375,6 +387,8 @@ class App extends Component {
           {this.state.searchResults.map(track => 
             <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
           )}
+
+          <button onClick={() => window.getQueue(this.state.connectCode)}>update Queue</button>
 
           {this.state.isPlaying === true &&
             <button onClick={() => {
