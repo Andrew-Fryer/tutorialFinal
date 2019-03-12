@@ -284,6 +284,7 @@ class App extends Component {
       },
       body : JSON.stringify({
         "connectCode" : this.state.connectCode,
+        "access_token" : this.accessToken,
         "track" : track
       })
     })
