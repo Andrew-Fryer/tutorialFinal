@@ -3,6 +3,7 @@ import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
 import querystring from 'querystring';
+import Autosuggest from 'react-autosuggest';
 
 let defaultStyle = {
   color: '#fff'
@@ -83,7 +84,8 @@ class App extends Component {
       venueName: undefined,
       recentlyPlayed : [],
       recentlyPlayedSearch : '',
-      searchResults : []
+      searchResults : [],
+      query : ""
     }
   }
   componentDidMount() {
@@ -162,7 +164,7 @@ class App extends Component {
       return response.json();
     })
     .then(queue => {
-      this.setState({queue : queue});
+      //this.setState({queue : queue});
     })
   }
   nextTrack() {
@@ -289,7 +291,7 @@ class App extends Component {
   }
   searchSpotify(text) {
     let _this = this
-    if(text !== '') {
+    if(text && text !== '') {
       fetch('https://api.spotify.com/v1/search?' +
         querystring.stringify({
           q : text,
@@ -442,13 +444,27 @@ class App extends Component {
               </div>
             :
               <div>
+                <Autosuggest
+                  suggestions={this.state.searchResults} // change to combination of results
+                  onSuggestionsFetchRequested={({value}) => {this.searchSpotify(value)}}
+                  onSuggestionsClearRequested={() => {this.setState({searchResults : []})}}
+                  getSuggestionValue={track => track.name}
+                  renderSuggestion={(track, {query}) => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  }
+                  inputProps={{
+                    placeholder : "Search Spotify here",
+                    value : this.state.query,
+                    onChange : (e, {newValue, m}) => {this.setState({query : newValue})}
+                  }}
+                />
                 <div style={{display: "inline-block", verticalAlign: "top"}}>
                   <h2>The Queue:</h2>
                   {queueToRender.map(track =>
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>
-                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                {/*<div style={{display: "inline-block", verticalAlign: "top"}}>
                   <h2>Search Your Playlists:</h2>
                   <Filter onTextChange={text => {
                       this.setState({playlistSearch: text})
@@ -475,7 +491,7 @@ class App extends Component {
                   {this.state.searchResults.map(track => 
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
-                </div>
+                </div>*/}
 
                 {this.state.isPlaying === true &&
                   <button onClick={() => {
