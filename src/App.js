@@ -70,13 +70,18 @@ class Playlist extends Component {
 
 class Song extends Component {
   render() { return (
-    <div onClick={() => {
-      if(this.props.connected) {
-        this.props.vote(this.props.track)
-        console.log("voting for: " + this.props.track.name)
-      }
-    }}>
+    <div>
+      <img src={this.props.track.album.images[0]}/>
       {this.props.track.name}
+      {this.props.track.artists[0].name}
+      <div onClick={() => {
+        if(this.props.connected) {
+          this.props.vote(this.props.track)
+          console.log("voting for: " + this.props.track.name)
+        }
+      }}>
+        Vote
+      </div>
     </div>
   )}
 }
