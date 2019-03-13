@@ -3,7 +3,8 @@ import 'reset-css/reset.css';
 import './App.css';
 import queryString from 'query-string';
 import querystring from 'querystring';
-import io from 'socket.io-client'
+import io from 'socket.io-client';
+import Autosuggest from 'react-autosuggest';
 
 let backEndUrl = window.location.href.includes('localhost') ? "http://localhost:8888" : "https://mod3backend.herokuapp.com"
 
@@ -13,8 +14,7 @@ socket.on('connect', () => {
 })
 
 let defaultStyle = {
-  color: '#fff',
-  'font-family': 'Papyrus'
+  color: '#fff'
 };
 
 function isEven(number) {
@@ -90,7 +90,8 @@ class App extends Component {
       venueName: undefined,
       recentlyPlayed : [],
       recentlyPlayedSearch : '',
-      searchResults : []
+      searchResults : [],
+      query : ""
     }
   }
   componentDidMount() {
@@ -290,7 +291,7 @@ class App extends Component {
   }
   searchSpotify(text) {
     let _this = this
-    if(text !== '') {
+    if(text && text !== '') {
       fetch('https://api.spotify.com/v1/search?' +
         querystring.stringify({
           q : text,
@@ -335,128 +336,22 @@ class App extends Component {
           this.state.recentlyPlayedSearch.toLowerCase()
         )
       )
+    let queueToRender = 
+      this.state.queue &&
+      this.state.queue
+        .filter(t => !t.wasPlayed)
+        .sort((t1, t2) => t2.numVotes - t1.numVotes)
+        .slice(0, 10)
     return (
       <div className="App">
-        {this.state.user ?
         <div>
-          <h1 style={{...defaultStyle,
-            'font-size': '54px',
-            'margin-top': '5px'
-          }}>The Queue</h1>
-          <h1 style={{...defaultStyle, 
-            'font-size': '54px',
-            'margin-top': '5px'
-          }}>
-            Welcome, {this.state.user.name}.
-          </h1>
-
-          Search Your Playlists:
-          <Filter onTextChange={text => {
-              this.setState({playlistSearch: text})
-            }}/>
-          {playlistToRender.map((playlist, i) => 
-            <Playlist playlist={playlist} index={i}
-              connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-          )}
-
-          Search Your Recently Played Songs:
-          <Filter onTextChange={text => {
-              this.setState({recentlyPlayedSearch: text})
-            }}/>
-          {recentlyPlayedToRender.map(track => 
-            <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-          )}
-
-          Search Spotify:
-          <Filter onTextChange={text => {
-            this.searchSpotify(text)
-          }}/>
-          {this.state.searchResults.map(track => 
-            <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-          )}
-
-          {this.state.isPlaying === true &&
-            <button onClick={() => {
-              fetch('https://api.spotify.com/v1/me/player/pause' +
-              (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
-                method : "PUT",
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + this.state.accessToken
-                }
-              })
-              .then(response => {
-                if(response.status === 204) {
-                  this.setState({
-                    isPlaying : false
-                  })
-                } else {
-                  throw new Error("failed to pause song")
-                }
-              })
-            }}>Pause</button>
-          }
-          {this.state.isPlaying === false &&
-            <button onClick={() => {
-              fetch('https://api.spotify.com/v1/me/player/play' +
-              (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
-                method : "PUT",
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + this.state.accessToken
-                }
-              })
-              .then(response => {
-                if(response.status ===204) {
-                  this.setState({
-                    isPlaying : true
-                  })
-                } else {
-                  throw new Error("failed to resume song")
-                }
-              })
-            }}>Play</button>
-          }
-
-          <button onClick={() => {
-            let name = prompt("Enter name: ");
-            fetch(backEndUrl + '/create', {
-              method : "POST",
-              headers : {
-                'Content-Type': 'application/json;charset=UTF-8'
-              },
-              body : JSON.stringify({"name" : name})
-            })
-            .then(function(response) {
-              return response.json();
-            })
-            .then(response => {
-              this.setState({
-                connectCode : response.newConnectCode,
-                hostCode : response.newHostCode,
-                venueName : name
-              })
-              console.log("connectCode: " + JSON.stringify(response.newConnectCode))
-              this.connectToWebPlayer()
-              socket.emit('joinVenue', response.newConnectCode)
-            })
-          }}
-          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
-
-          {this.state.connectCode ?
-          <div> 
-            <h2>Connected To: {this.state.venueName}</h2>
-            {this.state.hostCode && (this.state.device_id ? 
-              <div>
-                <button onClick={() => {
-                  this.nextTrack.bind(this);
-                  this.nextTrack()
-                }}
-                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
-              </div>
-            : <div>Connecting to web player</div>)}
-
-            <button onClick={() => {
+          <img src="Logo.png" alt="couldn't load Logo.png" width="100"/>
+          <h1 style={{display: "inline-block"}}>The Queue</h1>
+          {this.state.user && <h1 style={{display: "inline-block"}}>Signed in as {this.state.user.name}.</h1>}
+          {this.state.connectCode && <div style={{display:"inline"}}>
+            <h2 style={{display: "inline-block"}}>Connected To {this.state.venueName}</h2>
+            <h1 style={{display: "inline-block"}}>Party Code is: {this.state.connectCode}</h1>
+            <button style={{display: "inline-block"}} onClick={() => {
               socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
@@ -467,43 +362,187 @@ class App extends Component {
                 this.state.webPlayer.disconnect();
               }
             }}
-            style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Leave</button>
-          </div>
-           : 
-          <button onClick={() => {
-            let connectCode = prompt("Enter connectCode: ");
-            fetch(backEndUrl + '/join?' +
-            querystring.stringify({
-              "connectCode" : connectCode
-            }), {
-              method : "GET"
-            })
-            .then(function(response) {
-              if(response.status === 200) {
-                return response.json()
-              } else {
-                throw new Error("Failed to join veneue")
-              }
-            })
-            .then(response => {
-              let venueName = response.venueName
-              this.setState({
-                connectCode: connectCode,
-                venueName: venueName
-              })
-              console.log("Connected to: " + venueName)
-              socket.emit('joinVenue', connectCode)
-            })
-            }
-          }
-          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
-          }
+            /*style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}*/>Leave</button>
+          </div>}
         </div>
-         : 
-        <button onClick={() => {
-            window.location = backEndUrl + '/login'
-          }}
-          style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Sign in with Spotify</button>
+
+        {!this.state.user ?
+          <div>
+            <button onClick={() => {
+                window.location = backEndUrl + '/login'}}
+                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>
+              Sign in with Spotify
+            </button>
+          </div>
+        :
+          <div>
+            {!this.state.connectCode ?
+              <div>
+                <button onClick={() => {
+                  let name = prompt("Enter name: ");
+                  fetch(backEndUrl + '/create', {
+                    method : "POST",
+                    headers : {
+                      'Content-Type': 'application/json;charset=UTF-8'
+                    },
+                    body : JSON.stringify({"name" : name})
+                  })
+                  .then(function(response) {
+                    return response.json();
+                  })
+                  .then(response => {
+                    this.setState({
+                      connectCode : response.newConnectCode,
+                      hostCode : response.newHostCode,
+                      venueName : name,
+                      queue : []
+                    })
+                    console.log("connectCode: " + JSON.stringify(response.newConnectCode))
+                    this.connectToWebPlayer()
+                    socket.emit('joinVenue', response.newConnectCode)
+                  })
+                }}
+                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
+                <button onClick={() => {
+                  let connectCode = prompt("Enter connectCode: ");
+                  fetch(backEndUrl + '/join?' +
+                  querystring.stringify({
+                    "connectCode" : connectCode
+                  }), {
+                    method : "GET"
+                  })
+                  .then(function(response) {
+                    if(response.status === 200) {
+                      return response.json()
+                    } else {
+                      throw new Error("Failed to join veneue")
+                    }
+                  })
+                  .then(response => {
+                    let venueName = response.venueName
+                    this.setState({
+                      connectCode : connectCode,
+                      venueName : venueName,
+                      queue : []
+                    })
+                    console.log("Connected to: " + venueName)
+                    socket.emit('joinVenue', connectCode)
+                  })
+                  }
+                }
+                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
+              </div>
+            :
+              <div>
+                <Autosuggest
+                  suggestions={this.state.searchResults} // change to combination of results
+                  onSuggestionsFetchRequested={({value}) => {this.searchSpotify(value)}}
+                  onSuggestionsClearRequested={() => {this.setState({searchResults : []})}}
+                  getSuggestionValue={track => track.name}
+                  renderSuggestion={(track, {query}) => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  }
+                  inputProps={{
+                    placeholder : "Search Spotify here",
+                    value : this.state.query,
+                    onChange : (e, {newValue, m}) => {this.setState({query : newValue})}
+                  }}
+                />
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>The Queue:</h2>
+                  {queueToRender.map(track =>
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                {/*<div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Your Playlists:</h2>
+                  <Filter onTextChange={text => {
+                      this.setState({playlistSearch: text})
+                    }}/>
+                  {playlistToRender.map((playlist, i) => 
+                    <Playlist playlist={playlist} index={i}
+                      connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Your Recently Played Songs:</h2>
+                  <Filter onTextChange={text => {
+                      this.setState({recentlyPlayedSearch: text})
+                    }}/>
+                  {recentlyPlayedToRender.map(track => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                  <h2>Search Spotify:</h2>
+                  <Filter onTextChange={text => {
+                    this.searchSpotify(text)
+                  }}/>
+                  {this.state.searchResults.map(track => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>*/}
+
+                {this.state.isPlaying === true &&
+                  <button onClick={() => {
+                    fetch('https://api.spotify.com/v1/me/player/pause' +
+                    (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                      method : "PUT",
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + this.state.accessToken
+                      }
+                    })
+                    .then(response => {
+                      if(response.status === 204) {
+                        this.setState({
+                          isPlaying : false
+                        })
+                      } else {
+                        throw new Error("failed to pause song")
+                      }
+                    })
+                  }}>Pause</button>
+                }
+                {this.state.isPlaying === false &&
+                  <button onClick={() => {
+                    fetch('https://api.spotify.com/v1/me/player/play' +
+                    (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                      method : "PUT",
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + this.state.accessToken
+                      }
+                    })
+                    .then(response => {
+                      if(response.status ===204) {
+                        this.setState({
+                          isPlaying : true
+                        })
+                      } else {
+                        throw new Error("failed to resume song")
+                      }
+                    })
+                  }}>Play</button>
+                }
+              </div>
+            }
+
+            {this.state.connectCode && // this is only a temporary debugginging thing
+            <div> 
+              <h2>Connected To: {this.state.venueName}</h2>
+              {this.state.hostCode && (this.state.device_id ? 
+                <div>
+                  <button onClick={() => {
+                    this.nextTrack.bind(this);
+                    this.nextTrack()
+                  }}
+                  style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+                </div>
+              : <div>Connecting to web player</div>)}
+            </div>
+            }
+          </div>
         }
       </div>
     );
