@@ -64,6 +64,7 @@ footer {
   height: 5vw;
   margin: 0.5% auto;
   background-color: rgba(128, 128, 128, 0.473);
+  text-overflow: ellipsis;
 }
 
 .queue_song > img{

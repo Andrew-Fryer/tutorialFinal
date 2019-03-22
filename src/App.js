@@ -29,7 +29,8 @@ class Filter extends Component {
           style={{...defaultStyle, 
             color: 'black', 
             'fontSize': '20px', 
-            padding: '10px'}}/>
+            padding: '10px',
+            display: "block"}}/>
       </div>
     );
   }
@@ -70,9 +71,12 @@ class Playlist extends Component {
 class Song extends Component {
   render() { return (
     <div className="queue_song">
-      <img src={this.props.track.album.images[0].url}/>
-      {this.props.track.name}
-      {this.props.track.artists[0].name}
+      <img style={{display: "inline-block"}} src={this.props.track.album.images[0].url}/>
+      <p style={{display: "inline-block", textOverflow: "ellipsis", width: "250px"}}>
+        {this.props.track.name}
+        <br/>
+        {this.props.track.artists[0].name}
+      </p>
       <div onClick={() => {
         if(this.props.connected) {
           this.props.vote(this.props.track)
@@ -439,13 +443,7 @@ class App extends Component {
               </div>
             :
               <div>
-                <div style={{display: "inline-block", verticalAlign: "top"}}>
-                  <h2>The Queue:</h2>
-                  {queueToRender.map(track =>
-                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                  )}
-                </div>
-                <div style={{display: "inline-block", verticalAlign: "top"}}>
+                {/*<div style={{display: "inline-block", verticalAlign: "top"}}>
                   <h2>Search Your Playlists:</h2>
                   <Filter onTextChange={text => {
                       this.setState({playlistSearch: text})
@@ -463,13 +461,19 @@ class App extends Component {
                   {recentlyPlayedToRender.map(track => 
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
-                </div>
-                <div style={{display: "inline-block", verticalAlign: "top"}}>
-                  <h2>Search Spotify:</h2>
+                </div>*/}
+                <div style={{display: "inline-block", verticalAlign: "top", width: "45%"}}>
+                  <h1 className="title" style={{padding: "5px", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "4vw", display: "block"}}>Search:</h1>
                   <Filter onTextChange={text => {
                     this.searchSpotify(text)
                   }}/>
                   {this.state.searchResults.map(track => 
+                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
+                  )}
+                </div>
+                <div style={{display: "inline-block", verticalAlign: "top", width: "45%"}}>
+                  <h1 className="title" style={{padding: "5px", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "3vw", height: "1.2em", display: "block"}}>Queue:</h1>
+                  {queueToRender.map(track =>
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>
