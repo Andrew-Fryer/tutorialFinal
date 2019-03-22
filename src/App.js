@@ -29,7 +29,7 @@ class Filter extends Component {
           this.props.onTextChange(event.target.value)}
           style={{...defaultStyle, 
             color: 'black', 
-            'font-size': '20px', 
+            'fontSize': '20px', 
             padding: '10px'}}/>
       </div>
     );
@@ -58,7 +58,7 @@ class Playlist extends Component {
         }}>
         <h2>{playlist.name}</h2>
         <img src={playlist.imageUrl} alt="" style={{width: '60px'}}/>
-        <ul style={{'margin-top': '10px', 'font-weight': 'bold'}}>
+        <ul style={{'marginTop': '10px', 'font-weight': 'bold'}}>
           {playlist.songs.map(song => 
             <li style={{'padding-top': '2px'}}>{song.name}</li>
           )}
@@ -70,8 +70,8 @@ class Playlist extends Component {
 
 class Song extends Component {
   render() { return (
-    <div>
-      <img src={this.props.track.album.images[0]}/>
+    <div className="queue_song">
+      <img src={this.props.track.album.images[0].url}/>
       {this.props.track.name}
       {this.props.track.artists[0].name}
       <div onClick={() => {
@@ -349,14 +349,16 @@ class App extends Component {
         .slice(0, 10)
     return (
       <div className="App">
-        <div>
-          <img src="Logo.png" alt="couldn't load Logo.png" width="100"/>
-          <h1 style={{display: "inline-block"}}>The Queue</h1>
-          {this.state.user && <h1 style={{display: "inline-block"}}>Signed in as {this.state.user.name}.</h1>}
-          {this.state.connectCode && <div style={{display:"inline"}}>
-            <h2 style={{display: "inline-block"}}>Connected To {this.state.venueName}</h2>
-            <h1 style={{display: "inline-block"}}>Party Code is: {this.state.connectCode}</h1>
-            <button style={{display: "inline-block"}} onClick={() => {
+        <div className="header">
+          <div className="logo">
+            <img src="Logo.png" alt="couldn't load Logo.png" width="10%"/>
+          </div>
+          <h1 className="title" style={{width: "20%", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "4vw"}}>The Queue</h1>
+          {this.state.user && <h1 className="title" style={{width: "20%", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "3vw", height: "2.4em"}}>Signed in as: {this.state.user.name}.</h1>}
+          {this.state.connectCode && <div style={{}/*{display: "inline-block"}*/}>
+            <h2 className="title" style={{width: "20%", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "3vw", height: "2.4em"}}>Connected To: {this.state.venueName}</h2>
+            <h1 className="title" style={{width: "20%", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "4vw", height: "2.4em"}}>Party Code: {this.state.connectCode}</h1>
+            <button className="title" style={{width: "10%", backgroundColor: "#rgba(255, 40, 40, 0.658)", fontSize: "3vw", height: "2.4em", zIndex: "3"}} onClick={() => {
               socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
@@ -367,7 +369,7 @@ class App extends Component {
                 this.state.webPlayer.disconnect();
               }
             }}
-            /*style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}*/>Leave</button>
+            /*style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}*/>Exit Party</button>
           </div>}
         </div>
 
@@ -375,7 +377,7 @@ class App extends Component {
           <div>
             <button onClick={() => {
                 window.location = backEndUrl + '/login'}}
-                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>
+                style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>
               Sign in with Spotify
             </button>
           </div>
@@ -407,7 +409,7 @@ class App extends Component {
                     socket.emit('joinVenue', response.newConnectCode)
                   })
                 }}
-                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Create</button>
+                style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Create</button>
                 <button onClick={() => {
                   let connectCode = prompt("Enter connectCode: ");
                   fetch(backEndUrl + '/join?' +
@@ -435,7 +437,7 @@ class App extends Component {
                   })
                   }
                 }
-                style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Join</button>
+                style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Join</button>
               </div>
             :
               <div>
@@ -487,68 +489,75 @@ class App extends Component {
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>*/}
-
-                {this.state.isPlaying === true &&
-                  <button onClick={() => {
-                    fetch('https://api.spotify.com/v1/me/player/pause' +
-                    (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
-                      method : "PUT",
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + this.state.accessToken
-                      }
-                    })
-                    .then(response => {
-                      if(response.status === 204) {
-                        this.setState({
-                          isPlaying : false
-                        })
-                      } else {
-                        throw new Error("failed to pause song")
-                      }
-                    })
-                  }}>Pause</button>
-                }
-                {this.state.isPlaying === false &&
-                  <button onClick={() => {
-                    fetch('https://api.spotify.com/v1/me/player/play' +
-                    (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
-                      method : "PUT",
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + this.state.accessToken
-                      }
-                    })
-                    .then(response => {
-                      if(response.status ===204) {
-                        this.setState({
-                          isPlaying : true
-                        })
-                      } else {
-                        throw new Error("failed to resume song")
-                      }
-                    })
-                  }}>Play</button>
-                }
               </div>
             }
 
             {this.state.connectCode && // this is only a temporary debugginging thing
-            <div> 
-              <h2>Connected To: {this.state.venueName}</h2>
+            <div>
               {this.state.hostCode && (this.state.device_id ? 
                 <div>
                   <button onClick={() => {
                     this.nextTrack.bind(this);
                     this.nextTrack()
                   }}
-                  style={{padding: '20px', 'font-size': '50px', 'margin-top': '20px'}}>Play song</button>
+                  style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Play song</button>
                 </div>
               : <div>Connecting to web player</div>)}
             </div>
             }
           </div>
         }
+        {this.state.current_track && <div className="footer">
+          <div className="album_image_container">
+            <img src={this.state.current_track.album.images[0].url} width="100%" height="100%"/>
+          </div>
+          {this.state.current_track.name /* TODO: add css */}
+          {this.state.current_track.artists[0]}
+          <div className="controls">
+            {this.state.isPlaying === true &&
+              <button onClick={() => {
+                fetch('https://api.spotify.com/v1/me/player/pause' +
+                (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                  method : "PUT",
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.state.accessToken
+                  }
+                })
+                .then(response => {
+                  if(response.status === 204) {
+                    this.setState({
+                      isPlaying : false
+                    })
+                  } else {
+                    throw new Error("failed to pause song")
+                  }
+                })
+              }}>Pause</button>
+            }
+            {this.state.isPlaying === false &&
+              <button onClick={() => {
+                fetch('https://api.spotify.com/v1/me/player/play' +
+                (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
+                  method : "PUT",
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.state.accessToken
+                  }
+                })
+                .then(response => {
+                  if(response.status ===204) {
+                    this.setState({
+                      isPlaying : true
+                    })
+                  } else {
+                    throw new Error("failed to resume song")
+                  }
+                })
+              }}>Play</button>
+            }
+          </div>
+        </div>}
       </div>
     );
   }
