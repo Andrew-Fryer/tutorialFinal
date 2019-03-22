@@ -30,7 +30,8 @@ class Filter extends Component {
             color: 'black', 
             'fontSize': '20px', 
             padding: '10px',
-            display: "block"}}/>
+            display: "block",
+            width: "500px"}}/>
       </div>
     );
   }
@@ -351,16 +352,14 @@ class App extends Component {
         .slice(0, 10)
     return (
       <div className="App">
-        <div className="header">
-          <div className="logo">
-            <img src="Logo.png" alt="couldn't load Logo.png" width="10%"/>
-          </div>
-          <h1 className="title" style={{width: "20%", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "4vw"}}>The Queue</h1>
-          {this.state.user && <h1 className="title" style={{width: "20%", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "3vw", height: "2.4em"}}>Signed in as: {this.state.user.name}.</h1>}
+        <div style={{display: "block"}}>
+          <img className="title" src="Logo.png" alt="couldn't load Logo.png"/>
+          <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>The Queue</h1>
+          {this.state.user && <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Signed in as: {this.state.user.name}.</h1>}
           {this.state.connectCode && <div style={{}/*{display: "inline-block"}*/}>
-            <h2 className="title" style={{width: "20%", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "3vw", height: "2.4em"}}>Connected To: {this.state.venueName}</h2>
-            <h1 className="title" style={{width: "20%", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "4vw", height: "2.4em"}}>Party Code: {this.state.connectCode}</h1>
-            <button className="title" style={{width: "10%", backgroundColor: "#rgba(255, 40, 40, 0.658)", fontSize: "3vw", height: "2.4em", zIndex: "3"}} onClick={() => {
+            <h2 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>Connected To: {this.state.venueName}</h2>
+            <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Party Code: {this.state.connectCode}</h1>
+            <button className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}} onClick={() => {
               socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
@@ -462,8 +461,8 @@ class App extends Component {
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>*/}
-                <div style={{display: "inline-block", verticalAlign: "top", width: "45%"}}>
-                  <h1 className="title" style={{padding: "5px", backgroundColor: "rgba(255, 40, 40, 0.658)", fontSize: "4vw", display: "block"}}>Search:</h1>
+                <div style={{display: "inline-block", verticalAlign: "top", width: "400px"}}>
+                  <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)", display: "block", width: "500px"}}>Search:</h1>
                   <Filter onTextChange={text => {
                     this.searchSpotify(text)
                   }}/>
@@ -471,8 +470,8 @@ class App extends Component {
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>
-                <div style={{display: "inline-block", verticalAlign: "top", width: "45%"}}>
-                  <h1 className="title" style={{padding: "5px", backgroundColor: "rgba(97, 97, 97, 0.548)", fontSize: "3vw", height: "1.2em", display: "block"}}>Queue:</h1>
+                <div style={{display: "inline-block", verticalAlign: "top", width: "400px"}}>
+                  <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)", display: "block", width: "500px"}}>Queue:</h1>
                   {queueToRender.map(track =>
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
