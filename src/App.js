@@ -356,7 +356,7 @@ class App extends Component {
           <img className="title" src="Logo.png" alt="couldn't load Logo.png"/>
           <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>The Queue</h1>
           {this.state.user && <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Signed in as: {this.state.user.name}.</h1>}
-          {this.state.connectCode && <div style={{}/*{display: "inline-block"}*/}>
+          {this.state.connectCode && <div style={{display: "inline-block"}}>
             <h2 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>Connected To: {this.state.venueName}</h2>
             <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Party Code: {this.state.connectCode}</h1>
             <button className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}} onClick={() => {
@@ -442,25 +442,6 @@ class App extends Component {
               </div>
             :
               <div>
-                {/*<div style={{display: "inline-block", verticalAlign: "top"}}>
-                  <h2>Search Your Playlists:</h2>
-                  <Filter onTextChange={text => {
-                      this.setState({playlistSearch: text})
-                    }}/>
-                  {playlistToRender.map((playlist, i) => 
-                    <Playlist playlist={playlist} index={i}
-                      connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                  )}
-                </div>
-                <div style={{display: "inline-block", verticalAlign: "top"}}>
-                  <h2>Search Your Recently Played Songs:</h2>
-                  <Filter onTextChange={text => {
-                      this.setState({recentlyPlayedSearch: text})
-                    }}/>
-                  {recentlyPlayedToRender.map(track => 
-                    <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
-                  )}
-                </div>*/}
                 <div style={{display: "inline-block", verticalAlign: "top", width: "400px"}}>
                   <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)", display: "block", width: "500px"}}>Search:</h1>
                   <Filter onTextChange={text => {
