@@ -20,9 +20,6 @@ body {
   margin-right: 5px;
 }
 
-.logo > img{
-}
-
 .title {
   min-height: 50px;
   margin: 5px;
@@ -42,7 +39,7 @@ footer {
   width: 100%;
 }
 
-.album_image_container {
+footer > img {
   width: 6vw;
   height: 100%;
   margin: 0px;

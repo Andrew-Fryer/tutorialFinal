@@ -461,28 +461,24 @@ class App extends Component {
                 </div>
               </div>
             }
-
-            {this.state.connectCode && // this is only a temporary debugginging thing
-            <div>
-              {this.state.hostCode && (this.state.device_id ? 
-                <div>
-                  <button onClick={() => {
-                    this.nextTrack.bind(this);
-                    this.nextTrack()
-                  }}
-                  style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Play song</button>
-                </div>
-              : <div>Connecting to web player</div>)}
-            </div>
-            }
           </div>
         }
         {this.state.current_track && <div className="footer">
-          <div className="album_image_container">
-            <img src={this.state.current_track.album.images[0].url} width="100%" height="100%"/>
+          <div className="queue_song">
+            <img style={{display: "inline-block"}} src={this.state.current_track.album.images[0].url}/>
+            <p style={{display: "inline-block", textOverflow: "ellipsis", width: "250px"}}>
+              {this.state.current_track.name}
+              <br/>
+              {this.state.current_track.artists[0].name}
+            </p>
+            <div onClick={() => {
+              if(this.props.connected) {
+                this.props.vote(this.state.current_track)
+                console.log("voting for: " + this.state.current_track.name)
+              }}}>
+              Vote
+            </div>
           </div>
-          {this.state.current_track.name /* TODO: add css */}
-          {this.state.current_track.artists[0]}
           <div className="controls">
             {this.state.isPlaying === true &&
               <button onClick={() => {
@@ -526,6 +522,18 @@ class App extends Component {
                 })
               }}>Play</button>
             }
+            {this.state.connectCode && <div>
+              {this.state.hostCode && (this.state.device_id ? 
+                <div>
+                  <button onClick={() => {
+                    this.nextTrack.bind(this);
+                    this.nextTrack()
+                  }}
+                  style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Next</button>
+                </div>
+              : <div>Connecting to web player</div>)
+              }
+            </div>}
           </div>
         </div>}
       </div>
