@@ -199,7 +199,7 @@ class App extends Component {
         }
       }
       if(bestTrack.isDummy) {
-        throw new Error("No unplayed songs in the queue")
+        bestTrack = this.state.recentlyPlayed[5]; // kind of arbitrary, but whatever
       }
     })
     .then(() => {
@@ -253,6 +253,8 @@ class App extends Component {
           "device_id" : device_id
         })
         console.log('Ready with Device ID', device_id);
+        _this.nextTrack.bind(_this);
+        _this.nextTrack()
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
