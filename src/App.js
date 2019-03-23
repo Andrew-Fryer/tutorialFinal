@@ -475,6 +475,10 @@ class App extends Component {
             </p>
             {this.state.isPlaying === true &&
               <div onClick={() => {
+                if(!this.state.hostCode) {
+                  console.log("Only the host can pause the song.")
+                  return;
+                }
                 fetch('https://api.spotify.com/v1/me/player/pause' +
                 (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
                   method : "PUT",
@@ -496,6 +500,10 @@ class App extends Component {
             }
             {this.state.isPlaying === false &&
               <div onClick={() => {
+                if(!this.state.hostCode) {
+                  console.log("Only the host can resume the song.")
+                  return;
+                }
                 fetch('https://api.spotify.com/v1/me/player/play' +
                 (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
                   method : "PUT",
@@ -516,13 +524,16 @@ class App extends Component {
               }}>Play</div>
             }
             {this.state.connectCode && <div>
-              {this.state.hostCode && (this.state.device_id ? 
+              {this.state.device_id ? 
                 <div onClick={() => {
-                    this.nextTrack.bind(this);
-                    this.nextTrack()
+                  if(!this.state.hostCode) {
+                    console.log("Only the host can skip to the next song.")
+                    return;
                   }
-                }>Next</div>
-              : <div>Connecting to web player</div>)
+                  this.nextTrack.bind(this);
+                  this.nextTrack()
+                }}>Next</div>
+              : <div>Connecting to web player</div>
               }
             </div>}
           </div>
