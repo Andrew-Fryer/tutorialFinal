@@ -371,7 +371,9 @@ class App extends Component {
               this.setState({
                 connectCode: undefined,
                 hostCode : undefined,
-                venueName: undefined
+                venueName: undefined,
+                queue: [],
+                current_track: undefined
               })
               if(this.state.webPlayer) {
                 this.state.webPlayer.disconnect();
