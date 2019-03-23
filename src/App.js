@@ -353,13 +353,15 @@ class App extends Component {
     return (
       <div className="App">
         <div style={{display: "block"}}>
-          <img className="title" src="Logo.png" alt="couldn't load Logo.png"/>
+          <img className="logo" src="Logo.png" alt="couldn't load Logo.png"
+            style={{marginBlockStart: "0.67em",
+              /*marginBlockEnd: "0.67em"*/}}/>
           <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>The Queue</h1>
           {this.state.user && <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Signed in as: {this.state.user.name}.</h1>}
           {this.state.connectCode && <div style={{display: "inline-block"}}>
             <h2 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>Connected To: {this.state.venueName}</h2>
             <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Party Code: {this.state.connectCode}</h1>
-            <button className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}} onClick={() => {
+            <div className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}} onClick={() => {
               socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
@@ -370,7 +372,7 @@ class App extends Component {
                 this.state.webPlayer.disconnect();
               }
             }}
-            /*style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}*/>Exit Party</button>
+            /*style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}*/>Exit Party</div>
           </div>}
         </div>
 
@@ -441,9 +443,9 @@ class App extends Component {
                 style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Join</button>
               </div>
             :
-              <div>
-                <div style={{display: "inline-block", verticalAlign: "top", width: "400px"}}>
-                  <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)", display: "block", width: "500px"}}>Search:</h1>
+              <div style={{width: "100%"}}>
+                <div style={{display: "inline-block", verticalAlign: "top", width: "550px"}}>
+                  <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)", display: "block", width: "400px"}}>Search:</h1>
                   <Filter onTextChange={text => {
                     this.searchSpotify(text)
                   }}/>
@@ -451,8 +453,8 @@ class App extends Component {
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
                 </div>
-                <div style={{display: "inline-block", verticalAlign: "top", width: "400px"}}>
-                  <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)", display: "block", width: "500px"}}>Queue:</h1>
+                <div style={{display: "inline-block", verticalAlign: "top", width: "550px"}}>
+                  <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)", display: "block", width: "400px"}}>Queue:</h1>
                   {queueToRender.map(track =>
                     <Song track={track} connected={this.state.connectCode !== undefined} vote={t => this.vote(t)}/>
                   )}
