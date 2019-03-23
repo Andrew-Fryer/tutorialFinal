@@ -465,7 +465,7 @@ class App extends Component {
             }
           </div>
         }
-        {this.state.current_track && <div className="footer">
+        {this.state.current_track && <footer>
           <div className="queue_song">
             <img style={{display: "inline-block"}} src={this.state.current_track.album.images[0].url}/>
             <p style={{display: "inline-block", textOverflow: "ellipsis", width: "250px"}}>
@@ -473,17 +473,8 @@ class App extends Component {
               <br/>
               {this.state.current_track.artists[0].name}
             </p>
-            <div onClick={() => {
-              if(this.props.connected) {
-                this.props.vote(this.state.current_track)
-                console.log("voting for: " + this.state.current_track.name)
-              }}}>
-              Vote
-            </div>
-          </div>
-          <div className="controls">
             {this.state.isPlaying === true &&
-              <button onClick={() => {
+              <div onClick={() => {
                 fetch('https://api.spotify.com/v1/me/player/pause' +
                 (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
                   method : "PUT",
@@ -501,10 +492,10 @@ class App extends Component {
                     throw new Error("failed to pause song")
                   }
                 })
-              }}>Pause</button>
+              }}>Pause</div>
             }
             {this.state.isPlaying === false &&
-              <button onClick={() => {
+              <div onClick={() => {
                 fetch('https://api.spotify.com/v1/me/player/play' +
                 (this.state.device_id ? "?" + querystring.stringify({"device_id" : this.state.device_id}) : ""), {
                   method : "PUT",
@@ -522,22 +513,20 @@ class App extends Component {
                     throw new Error("failed to resume song")
                   }
                 })
-              }}>Play</button>
+              }}>Play</div>
             }
             {this.state.connectCode && <div>
               {this.state.hostCode && (this.state.device_id ? 
-                <div>
-                  <button onClick={() => {
+                <div onClick={() => {
                     this.nextTrack.bind(this);
                     this.nextTrack()
-                  }}
-                  style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}>Next</button>
-                </div>
+                  }
+                }>Next</div>
               : <div>Connecting to web player</div>)
               }
             </div>}
           </div>
-        </div>}
+        </footer>}
       </div>
     );
   }
