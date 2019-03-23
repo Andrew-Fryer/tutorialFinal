@@ -470,7 +470,7 @@ class App extends Component {
             }
           </div>
         }
-        {this.state.current_track && <footer>
+        {this.state.current_track && <div><div style={{minHeight: "50px"}}></div><footer>
           <div className="queue_song">
             <img style={{display: "inline-block"}} src={this.state.current_track.album.images[0].url}/>
             <p style={{display: "inline-block", textOverflow: "ellipsis", width: "250px"}}>
@@ -542,7 +542,7 @@ class App extends Component {
               }
             </div>}
           </div>
-        </footer>}
+        </footer></div>}
       </div>
     );
   }
