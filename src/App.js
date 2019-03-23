@@ -258,6 +258,9 @@ class App extends Component {
       });
       player.addListener('player_state_changed', state => {
         console.log(state);
+        if(!state) {
+          return;
+        }
         if(_this.state.current_track === undefined
             || state.track_window.current_track.uri !== _this.state.current_track.uri
             || (state.paused && _this.state.isPlaying)) {
