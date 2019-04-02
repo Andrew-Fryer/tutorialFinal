@@ -199,7 +199,7 @@ class App extends Component {
         }
       }
       if(bestTrack.isDummy) {
-        bestTrack = this.state.recentlyPlayed[5]; // kind of arbitrary, but whatever
+        bestTrack = this.state.recentlyPlayed[Math.random().toString().slice(2, 3)];  // should I check that it is unplayed?
       }
     })
     .then(() => {
