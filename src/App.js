@@ -168,9 +168,10 @@ class App extends Component {
     })
 
     console.log("why isn't this being run on the sign in screen?")
-    socket.on('updatedQueue', queue => {
+    socket.on('updatedQueue', ({queue, current_track}) => {
       this.setState({
-        queue : queue
+        queue : queue,
+        current_track : current_track
       })
     })
   }
