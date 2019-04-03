@@ -529,19 +529,15 @@ class App extends Component {
                 })
               }}>Play</div>
             }
-            {this.state.connectCode && <div>
-              {this.state.device_id ? 
-                <div onClick={() => {
-                  if(!this.state.hostCode) {
-                    console.log("Only the host can skip to the next song.")
-                    return;
-                  }
-                  this.nextTrack.bind(this);
-                  this.nextTrack()
-                }}>Next</div>
-              : <div>Connecting to web player</div>
-              }
-            </div>}
+            {this.state.device_id &&
+              <div onClick={() => {
+                if(!this.state.hostCode) {
+                  console.log("Only the host can skip to the next song.")
+                  return;
+                }
+                this.nextTrack.bind(this);
+                this.nextTrack()
+              }}>Next</div>}
           </div>
         </footer></div>}
       </div>
