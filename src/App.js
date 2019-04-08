@@ -78,7 +78,7 @@ class Song extends Component {
         <br/>
         {this.props.track.artists[0].name}
       </p>
-      <div onClick={() => {
+      <div id= "vote" onClick={() => {
         if(this.props.connected) {
           this.props.vote(this.props.track)
           console.log("voting for: " + this.props.track.name)
@@ -362,12 +362,11 @@ class App extends Component {
           <img className="logo" src="Logo.png" alt="couldn't load Logo.png"
             style={{marginBlockStart: "0.67em",
               /*marginBlockEnd: "0.67em"*/}}/>
-          <h1 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>The Queue</h1>
-          {this.state.user && <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Signed in as: {this.state.user.name}.</h1>}
+          {this.state.user && <h1 className="title" >Signed in as: {this.state.user.name}</h1>}
           {this.state.connectCode && <div style={{display: "inline-block"}}>
-            <h2 className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}}>Connected To: {this.state.venueName}</h2>
-            <h1 className="title" style={{backgroundColor: "rgba(97, 97, 97, 0.548)"}}>Party Code: {this.state.connectCode}</h1>
-            <div className="title" style={{backgroundColor: "rgba(255, 40, 40, 0.658)"}} onClick={() => {
+            <h2 className="title" >Connected To: {this.state.venueName}</h2>  
+            <h1 className="title" >Party Code: {this.state.connectCode}</h1>
+            <div className="title" id="exit" onClick={() => {
               socket.emit('leave', this.state.connectCode)
               this.setState({
                 connectCode: undefined,
@@ -380,7 +379,7 @@ class App extends Component {
                 this.state.webPlayer.disconnect();
               }
             }}
-            /*style={{padding: '20px', 'fontSize': '50px', 'marginTop': '20px'}}*/>Exit Party</div>
+            >Exit Party</div>
           </div>}
         </div>
 
